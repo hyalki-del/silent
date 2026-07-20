@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Müzik Prova Stüdyosu | Online Rezervasyon</title>
+  <!-- Tailwind CSS (Arayüz Tasarımı İçin) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+  <div class="max-w-3xl mx-auto p-4 sm:p-6 space-y-6">
+    
+    <!-- Başlık -->
+    <header class="flex justify-between items-center border-b border-slate-800 pb-4">
+      <h1 class="text-xl font-bold text-indigo-400">🥁 STÜDYO RİTİM</h1>
+      <span class="text-xs bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-slate-300">
+        Müzisyen Paneli
+      </span>
+    </header>
+
+    <!-- Fırsat Kampanyası -->
+    <section class="bg-indigo-950/40 border border-indigo-500/30 p-4 rounded-xl">
+      <h2 class="font-bold text-indigo-300">4 Ders Alana 1 Ders Bedava! 🎁</h2>
+      <p class="text-sm text-slate-300 mt-1">
+        Stüdyoda vereceğiniz ilk nakit ödemede hesabınıza <strong>5 Prova Kredisi</strong> tanımlanır. Online randevularınızda kredinizi kullanabilirsiniz.
+      </p>
+    </section>
+
+    <!-- Bakiyelerim -->
+    <section class="grid grid-cols-2 gap-4">
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <p class="text-xs text-slate-400">Grup Prova Kredisi</p>
+        <p id="credit-band" class="text-2xl font-bold text-indigo-400">3 Prova</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <p class="text-xs text-slate-400">Davul Prova Kredisi</p>
+        <p id="credit-drum" class="text-2xl font-bold text-emerald-400">0 Prova</p>
+      </div>
+    </section>
+
+    <!-- Rezervasyon Formu -->
+    <form id="booking-form" onsubmit="handleBooking(event)" class="bg-slate-900 border border-slate-800 p-6 rounded-xl space-y-5">
+      <h3 class="font-semibold border-b border-slate-800 pb-2">Online Prova Rezervasyonu</h3>
+
+      <!-- 1. Hizmet Seçimi -->
+      <div>
+        <label class="block text-xs text-slate-400 font-bold mb-2 uppercase">1. Hizmet Seçin</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="border border-slate-800 bg-slate-950 p-3 rounded-lg flex items-center space-x-3 cursor-pointer hover:border-slate-700">
+            <input type="radio" name="service" value="band" checked onchange="updatePrices()" class="accent-indigo-500">
+            <div>
+              <p class="font-medium text-sm">Grup Provası</p>
+              <p class="text-xs text-slate-400">1500 TL / Saat</p>
+            </div>
+          </label>
+          <label class="border border-slate-800 bg-slate-950 p-3 rounded-lg flex items-center space-x-3 cursor-pointer hover:border-slate-700">
+            <input type="radio" name="service" value="drum" onchange="updatePrices()" class="accent-indigo-500">
+            <div>
+              <p class="font-medium text-sm">Davul Provası</p>
+              <p class="text-xs text-slate-400">900 TL / Saat</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- 2. Saat Seçimi -->
+      <div>
+        <label class="block text-xs text-slate-400 font-bold mb-2 uppercase">2. Müsait Saat Seçin</label>
+        <select id="time-select" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+          <option value="">Saat seçiniz...</option>
+          <option value="14:00 - 15:00">14:00 - 15:00</option>
+          <option value="15:00 - 16:00">15:00 - 16:00</option>
+          <option value="18:00 - 19:00">18:00 - 19:00</option>
+          <option value="20:00 - 21:00">20:00 - 21:00</option>
+        </select>
+      </div>
+
+      <!-- 3. Ödeme Tipi -->
+      <div>
+        <label class="block text-xs text-slate-400 font-bold mb-2 uppercase">3. Ödeme Yöntemi</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="border border-slate-800 bg-slate-950 p-3 rounded-lg flex items-center space-x-3 cursor-pointer hover:border-slate-700">
+            <input type="radio" name="payment" value="cash" checked class="accent-indigo-500">
+            <div>
+              <p class="font-medium text-sm">Stüdyoda Nakit Öde</p>
+              <p id="cash-desc" class="text-xs text-slate-400">1500 TL yerinde ödenir.</p>
+            </div>
+          </label>
+          <label class="border border-slate-800 bg-slate-950 p-3 rounded-lg flex items-center space-x-3 cursor-pointer hover:border-slate-700">
+            <input type="radio" name="payment" value="credit" class="accent-indigo-500">
+            <div>
+              <p class="font-medium text-sm">Paket Kredisi Kullan</p>
+              <p class="text-xs text-slate-400">Bakiye hakkınızdan düşer.</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-lg transition">
+        Rezervasyonu Onayla
+      </button>
+    </form>
+
+    <!-- Onay Ekranı (Başta Gizli) -->
+    <div id="success-card" class="hidden bg-slate-900 border border-emerald-500/40 p-6 rounded-xl text-center space-y-3">
+      <div class="text-emerald-400 text-3xl">✓</div>
+      <h3 class="text-xl font-bold text-white">Rezervasyon Başarılı!</h3>
+      <div id="summary" class="text-sm text-slate-300 bg-slate-950 p-3 rounded-lg border border-slate-800"></div>
+      <button onclick="resetForm()" class="text-xs text-indigo-400 hover:underline">Yeni Rezervasyon Yap</button>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Mantığı -->
+  <script>
+    // Bakiye simülasyonu
+    let credits = { band: 3, drum: 0 };
+
+    function updatePrices() {
+      const service = document.querySelector('input[name="service"]:checked').value;
+      const cashDesc = document.getElementById('cash-desc');
+      if (service === 'band') {
+        cashDesc.innerText = '1500 TL yerinde ödenir.';
+      } else {
+        cashDesc.innerText = '900 TL yerinde ödenir.';
+      }
+    }
+
+    function handleBooking(e) {
+      e.preventDefault();
+      
+      const service = document.querySelector('input[name="service"]:checked').value;
+      const time = document.getElementById('time-select').value;
+      const payment = document.querySelector('input[name="payment"]:checked').value;
+
+      if (!time) {
+        alert('Lütfen bir saat seçin.');
+        return;
+      }
+
+      // Paket Kredisi Kontrolü
+      if (payment === 'credit') {
+        if (credits[service] < 1) {
+          alert('Seçtiğiniz hizmet için yeterli paket krediniz bulunmuyor.');
+          return;
+        }
+        credits[service] -= 1;
+        document.getElementById(`credit-${service}`).innerText = `${credits[service]} Prova`;
+      }
+
+      // Başarı Ekranını Göster
+      document.getElementById('booking-form').classList.add('hidden');
+      document.getElementById('success-card').classList.remove('hidden');
+
+      const serviceName = service === 'band' ? 'Grup Provası' : 'Davul Provası';
+      const paymentName = payment === 'cash' ? 'Stüdyoda Nakit' : 'Paket Kredisi (Düşüldü)';
+
+      document.getElementById('summary').innerHTML = `
+        <p><strong>Hizmet:</strong> ${serviceName}</p>
+        <p><strong>Saat:</strong> ${time}</p>
+        <p><strong>Ödeme:</strong> ${paymentName}</p>
+      `;
+    }
+
+    function resetForm() {
+      document.getElementById('booking-form').reset();
+      document.getElementById('booking-form').classList.remove('hidden');
+      document.getElementById('success-card').classList.add('hidden');
+      updatePrices();
+    }
+  </script>
+</body>
+</html>
