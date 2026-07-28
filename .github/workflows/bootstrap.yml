@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  repair-and-inject:
+  inject-payload:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -24,9 +24,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Execute Parser and Write Files
+      - name: Create Parser Script
         run: |
-          python3 -c '
+          cat << 'EOF' > parser.py
           import os
 
           payload = """${{ github.event.inputs.full_payload }}"""
@@ -50,10 +50,13 @@ jobs:
               os.makedirs(os.path.dirname(current_file), exist_ok=True)
               with open(current_file, "w", encoding="utf-8") as f:
                   f.write("\n".join(current_content).strip() + "\n")
-          '
+          EOF
+
+      - name: Run Parser
+        run: python3 parser.py && rm parser.py
 
       - name: Commit and Push Changes
         run: |
-          git add package.json src/data/mockNodes.ts src/app/page.tsx
+          git add .
           git status
-          git diff --quiet && git diff --staged --quiet || (git commit -m "fix: repair workflow payload injection and push files" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "feat: safe file injection via workflow" && git push)
