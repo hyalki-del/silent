@@ -29,17 +29,17 @@ jobs:
 
           payload = """${{ github.event.inputs.full_payload }}"""
           
-          # Dosyaları bölmek için özel bir ayırıcı kullanıyoruz: === FILE: yol/adi ===
           current_file = None
           current_content = []
 
           for line in payload.splitlines():
-              if line.startswith("=== FILE:"):
+              stripped = line.strip()
+              if stripped.startswith("=== FILE:") and stripped.endswith("==="):
                   if current_file:
                       os.makedirs(os.path.dirname(current_file), exist_ok=True)
                       with open(current_file, "w", encoding="utf-8") as f:
                           f.write("\n".join(current_content).strip() + "\n")
-                  current_file = line.replace("=== FILE:", "").strip()
+                  current_file = stripped.replace("=== FILE:", "").replace("===", "").strip()
                   current_content = []
               else:
                   current_content.append(line)
