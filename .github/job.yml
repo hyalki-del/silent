@@ -1,0 +1,285 @@
+name: Bootstrap Borderline Protocol
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate Project Structure and Files
+        run: |
+          mkdir -p src/app src/data public
+
+          cat << 'EOF' > package.json
+          {
+            "name": "borderline",
+            "version": "0.1.0",
+            "private": true,
+            "scripts": {
+              "dev": "next dev",
+              "build": "next build",
+              "start": "next start"
+            },
+            "dependencies": {
+              "react": "^18",
+              "react-dom": "^18",
+              "next": "14.2.3"
+            },
+            "devDependencies": {
+              "typescript": "^5",
+              "@types/node": "^20",
+              "@types/react": "^18",
+              "@types/react-dom": "^18",
+              "postcss": "^8",
+              "tailwindcss": "^3.4.1",
+              "autoprefixer": "^10"
+            }
+          }
+          EOF
+
+          cat << 'EOF' > tailwind.config.js
+          /** @type {import('tailwindcss').Config} */
+          module.exports = {
+            content: [
+              "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+              "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+              "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+            ],
+            theme: {
+              extend: {},
+            },
+            plugins: [],
+          }
+          EOF
+
+          cat << 'EOF' > postcss.config.js
+          module.exports = {
+            plugins: {
+              tailwindcss: {},
+              autoprefixer: {},
+            },
+          }
+          EOF
+
+          cat << 'EOF' > tsconfig.json
+          {
+            "compilerOptions": {
+              "target": "es5",
+              "lib": ["dom", "dom.iterable", "esnext"],
+              "allowJs": true,
+              "skipLibCheck": true,
+              "strict": true,
+              "noEmit": true,
+              "esModuleInterop": true,
+              "module": "esnext",
+              "moduleResolution": "bundler",
+              "resolveJsonModule": true,
+              "isolatedModules": true,
+              "jsx": "preserve",
+              "incremental": true,
+              "plugins": [
+                {
+                  "name": "next"
+                }
+              ],
+              "paths": {
+                "@/*": ["./src/*"]
+              }
+            },
+            "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+            "exclude": ["node_modules"]
+          }
+          EOF
+
+          cat << 'EOF' > src/app/globals.css
+          @tailwind base;
+          @tailwind components;
+          @tailwind utilities;
+
+          body {
+            background-color: #050505;
+            color: #ededed;
+            font-family: sans-serif;
+          }
+          EOF
+
+          cat << 'EOF' > src/app/layout.tsx
+          import type { Metadata } from "next";
+          import "./globals.css";
+
+          export const metadata: Metadata = {
+            title: "Borderline Protocol",
+            description: "Synchronization & Signal Network",
+          };
+
+          export default function RootLayout({
+            children,
+          }: {
+            children: React.ReactNode;
+          }) {
+            return (
+              <html lang="tr">
+                <body>{children}</body>
+              </html>
+            );
+          }
+          EOF
+
+          cat << 'EOF' > src/data/mockNodes.ts
+          export interface NodeData {
+            id: string;
+            codename: string;
+            tier: 1 | 2;
+            distanceKm: number;
+            compatibilityScore: number;
+            output: string;
+            techStack: string[];
+          }
+
+          export const MOCK_NODES: NodeData[] = [
+            {
+              id: "node-01",
+              codename: "Akel / Görükle",
+              tier: 1,
+              distanceKm: 4,
+              compatibilityScore: 92,
+              output: "Rust tabanlı mikro-servis mimarisi ve lojistik optimizasyon motoru.",
+              techStack: ["Rust", "Docker", "Systems Architecture"],
+            },
+            {
+              id: "node-02",
+              codename: "Defne / İstanbul",
+              tier: 2,
+              distanceKm: 125,
+              compatibilityScore: 86,
+              output: "Generative Design, 3D parametric modeling ve donanım prototipleme.",
+              techStack: ["Rhino/Grasshopper", "Python", "Hardware"],
+            },
+            {
+              id: "node-03",
+              codename: "Kaan / Nilüfer",
+              tier: 1,
+              distanceKm: 12,
+              compatibilityScore: 78,
+              output: "Modüler synthesizer tasarımı ve açık kaynak analog devreler.",
+              techStack: ["C++", "PCB Design", "Analog Audio"],
+            }
+          ];
+          EOF
+
+          cat << 'EOF' > src/app/page.tsx
+          "Change: client directive";
+          import React, { useState } from "react";
+          import { MOCK_NODES, NodeData } from "@/data/mockNodes";
+
+          export default function Home() {
+            // Fix for string literal representation inside workflow generator
+            const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
+            const [pingSent, setPingSent] = useState<string | null>(null);
+
+            const handlePing = (id: string) => {
+              setPingSent(id);
+              setTimeout(() => setPingSent(null), 3000);
+            };
+
+            return (
+              <main className="min-h-screen p-8 max-w-4xl mx-auto flex flex-col justify-between">
+                <div>
+                  <header className="flex justify-between items-center border-b border-neutral-800 pb-6 mb-8">
+                    <div>
+                      <h1 className="text-xl font-mono tracking-wider text-white">BORDERLINE // PROTOCOL</h1>
+                      <p className="text-xs text-neutral-500 mt-1">SYNCHRONIZATION & SIGNAL NETWORK</p>
+                    </div>
+                    <div className="text-xs font-mono bg-neutral-900 border border-neutral-800 px-3 py-1 rounded text-neutral-400">
+                      STATUS: ACTIVE_NODE
+                    </div>
+                  </header>
+
+                  <div className="mb-10 bg-neutral-950 border border-neutral-900 p-6 rounded-lg">
+                    <h2 className="text-lg font-semibold text-neutral-200 mb-2">KAOS DEĞİL, MİMARİ. SIĞLIK DEĞİL, SİNYAL.</h2>
+                    <p className="text-sm text-neutral-400">
+                      Geleneksel gürültü formasyonları devre dışı bırakıldı. Yalnızca coğrafi eşik ve somut çıktı üreten düğümler listeleniyor.
+                    </p>
+                  </div>
+
+                  <section>
+                    <h3 className="text-xs font-mono text-neutral-500 uppercase tracking-widest mb-4">
+                      Detected Proximity Nodes (Ağ Çevresi)
+                    </h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {MOCK_NODES.map((node) => (
+                        <div
+                          key={node.id}
+                          onClick={() => setSelectedNode(node)}
+                          className={`p-5 rounded-lg border transition-all cursor-pointer bg-neutral-950 ${
+                            selectedNode?.id === node.id
+                              ? "border-blue-600 bg-neutral-900/50"
+                              : "border-neutral-800 hover:border-neutral-700"
+                          }`}
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <span className="font-mono text-sm text-blue-400">{node.codename}</span>
+                            <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 border border-neutral-800">
+                              Tier {node.tier} ({node.distanceKm} km)
+                            </span>
+                          </div>
+                          <p className="text-sm text-neutral-300 mb-4">{node.output}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {node.techStack.map((tech, idx) => (
+                              <span key={idx} className="text-[10px] font-mono bg-neutral-900 text-neutral-400 px-2 py-0.5 rounded">
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
+                {selectedNode && (
+                  <div className="mt-8 border border-neutral-800 bg-neutral-950 p-6 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                      <div className="text-xs font-mono text-neutral-500">SELECTED NODE CONTEXT</div>
+                      <div className="text-md font-semibold text-white mt-1">{selectedNode.codename} — Uyum Skoru: %{selectedNode.compatibilityScore}</div>
+                      <p className="text-xs text-neutral-400 mt-1">Çıktı: {selectedNode.output}</p>
+                    </div>
+                    <button
+                      onClick={() => handlePing(selectedNode.id)}
+                      className="w-full md:w-auto bg-white text-black hover:bg-neutral-200 text-xs font-mono px-6 py-3 rounded font-medium transition-colors"
+                    >
+                      {pingSent === selectedNode.id ? "PING GÖNDERİLDİ ✓" : "CONTEXTUAL PING GÖNDER"}
+                    </button>
+                  </div>
+                )}
+
+                <footer className="mt-16 border-t border-neutral-900 pt-6 text-center text-xs text-neutral-600 font-mono">
+                  BORDERLINE PROTOCOL // ZERO-NOISE ENVIRONMENT
+                </footer>
+              </main>
+            );
+          }
+          EOF
+          
+          # Fix client directive line securely
+          sed -i 's/"Change: client directive"/"use client"/g' src/app/page.tsx
+
+      - name: Commit and Push Generated Files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-bootstrap borderline protocol structure" && git push)
