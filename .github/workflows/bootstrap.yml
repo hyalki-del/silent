@@ -1,10 +1,20 @@
-name: Borderline Full Payload Injector
+name: Borderline Manual Payload Injector
 
 on:
   workflow_dispatch:
+    inputs:
+      target_file:
+        description: 'Hedef Dosya Yolu (örn: src/app/page.tsx)'
+        required: true
+        default: 'src/app/page.tsx'
+        type: string
+      file_content:
+        description: 'Dosya İçeriği (Plaintext olarak buraya yapıştır)'
+        required: true
+        type: string
 
 jobs:
-  inject-files:
+  write-payload:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -17,302 +27,13 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Write All Project Files
+      - name: Inject Content into File
         run: |
-          mkdir -p src/app src/data public
+          DIR=$(dirname "${{ github.event.inputs.target_file }}")
+          mkdir -p "$DIR"
+          echo "${{ github.event.inputs.file_content }}" > "${{ github.event.inputs.target_file }}"
 
-          cat << 'EOF' > package.json
-          {
-            "name": "borderline",
-            "version": "0.1.0",
-            "private": true,
-            "scripts": {
-              "dev": "next dev",
-              "build": "next build",
-              "start": "next start"
-            },
-            "dependencies": {
-              "react": "^18",
-              "react-dom": "^18",
-              "next": "14.2.3"
-            },
-            "devDependencies": {
-              "typescript": "^5",
-              "@types/node": "^20",
-              "@types/react": "^18",
-              "@types/react-dom": "^18",
-              "postcss": "^8",
-              "tailwindcss": "^3.4.1",
-              "autoprefixer": "^10"
-            }
-          }
-          EOF
-
-          cat << 'EOF' > tailwind.config.js
-          /** @type {import('tailwindcss').Config} */
-          module.exports = {
-            content: [
-              "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-              "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-              "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-            ],
-            theme: {
-              extend: {},
-            },
-            plugins: [],
-          }
-          EOF
-
-          cat << 'EOF' > postcss.config.js
-          module.exports = {
-            plugins: {
-              tailwindcss: {},
-              autoprefixer: {},
-            },
-          }
-          EOF
-
-          cat << 'EOF' > tsconfig.json
-          {
-            "compilerOptions": {
-              "target": "es5",
-              "lib": ["dom", "dom.iterable", "esnext"],
-              "allowJs": true,
-              "skipLibCheck": true,
-              "strict": true,
-              "noEmit": true,
-              "esModuleInterop": true,
-              "module": "esnext",
-              "moduleResolution": "bundler",
-              "resolveJsonModule": true,
-              "isolatedModules": true,
-              "jsx": "preserve",
-              "incremental": true,
-              "plugins": [
-                {
-                  "name": "next"
-                }
-              ],
-              "paths": {
-                "@/*": ["./src/*"]
-              }
-            },
-            "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-            "exclude": ["node_modules"]
-          }
-          EOF
-
-          cat << 'EOF' > src/app/globals.css
-          @tailwind base;
-          @tailwind components;
-          @tailwind utilities;
-
-          body {
-            background-color: #050505;
-            color: #ededed;
-            font-family: sans-serif;
-          }
-          EOF
-
-          cat << 'EOF' > src/app/layout.tsx
-          import type { Metadata } from "next";
-          import "./globals.css";
-
-          export const metadata: Metadata = {
-            title: "Borderline Protocol",
-            description: "Synchronization & Signal Network",
-          };
-
-          export default function RootLayout({
-            children,
-          }: {
-            children: React.ReactNode;
-          }) {
-            return (
-              <html lang="tr">
-                <body>{children}</body>
-              </html>
-            );
-          }
-          EOF
-
-          cat << 'EOF' > src/data/mockNodes.ts
-          export interface NodeData {
-            id: string;
-            codename: string;
-            tier: 1 | 2;
-            distanceKm: number;
-            compatibilityScore: number;
-            output: string;
-            techStack: string[];
-          }
-
-          export const MY_NODE: NodeData = {
-            id: "self-node",
-            codename: "Sen / Merkez Node",
-            tier: 1,
-            distanceKm: 0,
-            compatibilityScore: 100,
-            output: "Sistem mimarisi, sıfır gürültü protokolleri ve rasyonel insan eşleme ağı kurucusu.",
-            techStack: ["Architecture", "Next.js", "Systems Design", "Protocol Logic"],
-          };
-
-          export const MOCK_NODES: NodeData[] = [
-            {
-              id: "node-01",
-              codename: "Akel / Görükle",
-              tier: 1,
-              distanceKm: 4,
-              compatibilityScore: 92,
-              output: "Rust tabanlı mikro-servis mimarisi ve lojistik optimizasyon motoru.",
-              techStack: ["Rust", "Docker", "Systems Architecture"],
-            },
-            {
-              id: "node-02",
-              codename: "Defne / İstanbul",
-              tier: 2,
-              distanceKm: 125,
-              compatibilityScore: 86,
-              output: "Generative Design, 3D parametric modeling ve donanım prototipleme.",
-              techStack: ["Rhino/Grasshopper", "Python", "Hardware"],
-            },
-            {
-              id: "node-03",
-              codename: "Kaan / Nilüfer",
-              tier: 1,
-              distanceKm: 12,
-              compatibilityScore: 78,
-              output: "Modüler synthesizer tasarımı ve açık kaynak analog devreler.",
-              techStack: ["C++", "PCB Design", "Analog Audio"],
-            }
-          ];
-          EOF
-
-          cat << 'EOF' > src/app/page.tsx
-          "use client";
-
-          import React, { useState } from "react";
-          import { MOCK_NODES, MY_NODE, NodeData } from "@/data/mockNodes";
-
-          export default function Home() {
-            const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
-            const [viewingSelf, setViewingSelf] = useState(false);
-            const [pingSent, setPingSent] = useState<string | null>(null);
-
-            const handlePing = (id: string) => {
-              setPingSent(id);
-              setTimeout(() => setPingSent(null), 3000);
-            };
-
-            return (
-              <main className="min-h-screen p-8 max-w-4xl mx-auto flex flex-col justify-between">
-                <div>
-                  <header className="flex justify-between items-center border-b border-neutral-800 pb-6 mb-8">
-                    <div>
-                      <h1 className="text-xl font-mono tracking-wider text-white">BORDERLINE // PROTOCOL</h1>
-                      <p className="text-xs text-neutral-500 mt-1">SYNCHRONIZATION & SIGNAL NETWORK</p>
-                    </div>
-                    <button
-                      onClick={() => { setViewingSelf(true); setSelectedNode(null); }}
-                      className="text-xs font-mono bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 px-4 py-2 rounded hover:bg-yellow-500/20 transition-colors cursor-pointer"
-                    >
-                      KENDİ KODUNU GÖR (NODE-0)
-                    </button>
-                  </header>
-
-                  <div className="mb-10 bg-neutral-950 border border-neutral-900 p-6 rounded-lg">
-                    <h2 className="text-lg font-semibold text-neutral-200 mb-2">KAOS DEĞİL, MİMARİ. SIĞLIK DEĞİL, SİNYAL.</h2>
-                    <p className="text-sm text-neutral-400">
-                      Tier 1 (Sarı/Yeşil) yakın çevre erişimi, Tier 2 (Sarı/Koyu Sarı) yüksek eşikli uzak koridorları temsil eder.
-                    </p>
-                  </div>
-
-                  <section>
-                    <h3 className="text-xs font-mono text-neutral-500 uppercase tracking-widest mb-4">
-                      Detected Proximity Nodes (Ağ Çevresi)
-                    </h3>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {MOCK_NODES.map((node) => {
-                        const isTier1 = node.tier === 1;
-                        const borderColor = isTier1 ? "border-yellow-500/50 hover:border-green-400" : "border-yellow-600/40 hover:border-yellow-500";
-                        const badgeBg = isTier1 ? "bg-green-500/10 text-green-400 border-green-500/30" : "bg-yellow-950/40 text-yellow-500 border-yellow-700/50";
-                        const accentText = isTier1 ? "text-yellow-300" : "text-yellow-500";
-
-                        return (
-                          <div
-                            key={node.id}
-                            onClick={() => { setSelectedNode(node); setViewingSelf(false); }}
-                            className={`p-5 rounded-lg border transition-all cursor-pointer bg-neutral-950 ${borderColor} ${
-                              selectedNode?.id === node.id ? "ring-2 ring-yellow-400/50" : ""
-                            }`}
-                          >
-                            <div className="flex justify-between items-start mb-3">
-                              <span className={`font-mono text-sm ${accentText}`}>{node.codename}</span>
-                              <span className={`text-xs font-mono px-2 py-0.5 rounded border ${badgeBg}`}>
-                                Tier {node.tier} ({node.distanceKm} km)
-                              </span>
-                            </div>
-                            <p className="text-sm text-neutral-300 mb-4">{node.output}</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {node.techStack.map((tech, idx) => (
-                                <span key={idx} className="text-[10px] font-mono bg-neutral-900 text-neutral-400 px-2 py-0.5 rounded">
-                                  {tech}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </section>
-                </div>
-
-                {viewingSelf && (
-                  <div className="mt-8 border border-yellow-500/40 bg-neutral-950 p-6 rounded-lg relative">
-                    <button 
-                      onClick={() => setViewingSelf(false)} 
-                      className="absolute top-4 right-4 text-xs font-mono text-neutral-500 hover:text-white"
-                    >
-                      [KAPAT]
-                    </button>
-                    <div className="text-xs font-mono text-yellow-400 mb-1">LOCAL NODE CONFIGURATION (SENİN PROFİLİN)</div>
-                    <div className="text-md font-semibold text-white mt-1">{MY_NODE.codename} — Aktif Durum</div>
-                    <p className="text-xs text-neutral-300 mt-2">Çıktı: {MY_NODE.output}</p>
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                      {MY_NODE.techStack.map((tech, idx) => (
-                        <span key={idx} className="text-[10px] font-mono bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded">
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedNode && !viewingSelf && (
-                  <div className="mt-8 border border-neutral-800 bg-neutral-950 p-6 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                      <div className="text-xs font-mono text-neutral-500">SELECTED NODE CONTEXT</div>
-                      <div className="text-md font-semibold text-white mt-1">{selectedNode.codename} — Uyum Skoru: %{selectedNode.compatibilityScore}</div>
-                      <p className="text-xs text-neutral-400 mt-1">Çıktı: {selectedNode.output}</p>
-                    </div>
-                    <button
-                      onClick={() => handlePing(selectedNode.id)}
-                      className="w-full md:w-auto bg-yellow-500 text-black hover:bg-yellow-400 text-xs font-mono px-6 py-3 rounded font-medium transition-colors cursor-pointer"
-                    >
-                      {pingSent === selectedNode.id ? "PING GÖNDERİLDİ ✓" : "CONTEXTUAL PING GÖNDER"}
-                    </button>
-                  </div>
-                )}
-
-                <footer className="mt-16 border-t border-neutral-900 pt-6 text-center text-xs text-neutral-600 font-mono">
-                  BORDERLINE PROTOCOL // ZERO-NOISE ENVIRONMENT
-                </footer>
-              </main>
-            );
-          }
-          EOF
-
-      - name: Commit and Push Generated Files
+      - name: Commit and Push Changes
         run: |
           git add .
-          git diff --quiet && git diff --staged --quiet || (git commit -m "payload: inject full borderline project structure" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "payload: manual inject into ${{ github.event.inputs.target_file }}" && git push)
