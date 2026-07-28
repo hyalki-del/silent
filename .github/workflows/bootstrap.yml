@@ -4,15 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       full_payload:
-        description: 'Tüm dosya içeriklerini plaintext olarak buraya yapıştır'
+        description: "Paste all file contents here in plaintext"
         required: true
         type: string
 
 jobs:
-  inject-payload:
+  repair-and-inject:
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -24,39 +26,67 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create Parser Script
+      - name: Save Payload
         run: |
-          cat << 'EOF' > parser.py
-          import os
+          cat > payload.txt <<'PAYLOAD'
+${{ github.event.inputs.full_payload }}
+PAYLOAD
 
-          payload = """${{ github.event.inputs.full_payload }}"""
-          
-          current_file = None
-          current_content = []
+      - name: Parse Payload and Write Files
+        run: |
+          python3 <<'PYTHON'
+import os
 
-          for line in payload.splitlines():
-              stripped = line.strip()
-              if stripped.startswith("=== FILE:") and stripped.endswith("==="):
-                  if current_file:
-                      os.makedirs(os.path.dirname(current_file), exist_ok=True)
-                      with open(current_file, "w", encoding="utf-8") as f:
-                          f.write("\n".join(current_content).strip() + "\n")
-                  current_file = stripped.replace("=== FILE:", "").replace("===", "").strip()
-                  current_content = []
-              else:
-                  current_content.append(line)
+with open("payload.txt", "r", encoding="utf-8") as f:
+    payload = f.read()
 
-          if current_file:
-              os.makedirs(os.path.dirname(current_file), exist_ok=True)
-              with open(current_file, "w", encoding="utf-8") as f:
-                  f.write("\n".join(current_content).strip() + "\n")
-          EOF
+current_file = None
+current_content = []
 
-      - name: Run Parser
-        run: python3 parser.py && rm parser.py
+def write_file(path, lines):
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        f.write("\n".join(lines).rstrip("\n") + "\n")
+
+for line in payload.splitlines():
+    stripped = line.strip()
+
+    if stripped.startswith("=== FILE:") and stripped.endswith("==="):
+        if current_file:
+            write_file(current_file, current_content)
+
+        current_file = (
+            stripped
+            .replace("=== FILE:", "")
+            .replace("===", "")
+            .strip()
+        )
+
+        current_content = []
+
+    else:
+        current_content.append(line)
+
+if current_file:
+    write_file(current_file, current_content)
+
+print("Payload successfully written.")
+PYTHON
+
+      - name: Remove Temporary Payload
+        run: rm payload.txt
 
       - name: Commit and Push Changes
         run: |
-          git add .
-          git status
-          git diff --quiet && git diff --staged --quiet || (git commit -m "feat: safe file injection via workflow" && git push)
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "fix: automatic payload injection via workflow"
+          git push
