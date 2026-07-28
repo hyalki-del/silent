@@ -1,4 +1,4 @@
-name: Bootstrap Borderline Protocol
+name: Borderline Protocol Payload
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 
 jobs:
-  scaffold:
+  deploy-payload:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -14,15 +14,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Setup Git Identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Generate Project Structure and Files
+      - name: Execute Payload Generation
         run: |
           mkdir -p src/app src/data public
 
+          # 1. package.json
           cat << 'EOF' > package.json
           {
             "name": "borderline",
@@ -50,6 +51,7 @@ jobs:
           }
           EOF
 
+          # 2. tailwind.config.js
           cat << 'EOF' > tailwind.config.js
           /** @type {import('tailwindcss').Config} */
           module.exports = {
@@ -65,6 +67,7 @@ jobs:
           }
           EOF
 
+          # 3. postcss.config.js
           cat << 'EOF' > postcss.config.js
           module.exports = {
             plugins: {
@@ -74,6 +77,7 @@ jobs:
           }
           EOF
 
+          # 4. tsconfig.json
           cat << 'EOF' > tsconfig.json
           {
             "compilerOptions": {
@@ -104,6 +108,7 @@ jobs:
           }
           EOF
 
+          # 5. src/app/globals.css
           cat << 'EOF' > src/app/globals.css
           @tailwind base;
           @tailwind components;
@@ -116,6 +121,7 @@ jobs:
           }
           EOF
 
+          # 6. src/app/layout.tsx
           cat << 'EOF' > src/app/layout.tsx
           import type { Metadata } from "next";
           import "./globals.css";
@@ -138,6 +144,7 @@ jobs:
           }
           EOF
 
+          # 7. src/data/mockNodes.ts
           cat << 'EOF' > src/data/mockNodes.ts
           export interface NodeData {
             id: string;
@@ -180,13 +187,14 @@ jobs:
           ];
           EOF
 
+          # 8. src/app/page.tsx
           cat << 'EOF' > src/app/page.tsx
-          "Change: client directive";
+          "use client";
+
           import React, { useState } from "react";
           import { MOCK_NODES, NodeData } from "@/data/mockNodes";
 
           export default function Home() {
-            // Fix for string literal representation inside workflow generator
             const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
             const [pingSent, setPingSent] = useState<string | null>(null);
 
@@ -273,13 +281,8 @@ jobs:
             );
           }
           EOF
-          
-          # Fix client directive line securely
-          sed -i 's/"Change: client directive"/"use client"/g' src/app/page.tsx
 
-      - name: Commit and Push Generated Files
+      - name: Commit and Push Payload
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-bootstrap borderline protocol structure" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "payload: inject full borderline protocol architecture" && git push)
