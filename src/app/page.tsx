@@ -1,9 +1,9 @@
 "use client";
+
 import React, { useState } from "react";
 import { MOCK_NODES, NodeData } from "@/data/mockNodes";
 
 export default function Home() {
-  // Fix for string literal representation inside workflow generator
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
   const [pingSent, setPingSent] = useState<string | null>(null);
 
