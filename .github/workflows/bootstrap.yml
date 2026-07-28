@@ -1,20 +1,15 @@
-name: Borderline Manual Payload Injector
+name: Borderline Manual Multi-File Injector
 
 on:
   workflow_dispatch:
     inputs:
-      target_file:
-        description: 'Hedef Dosya Yolu (örn: src/app/page.tsx)'
-        required: true
-        default: 'src/app/page.tsx'
-        type: string
-      file_content:
-        description: 'Dosya İçeriği (Plaintext olarak buraya yapıştır)'
+      full_payload:
+        description: 'Tüm dosyaları ve içeriklerini plaintext olarak buraya yapıştır'
         required: true
         type: string
 
 jobs:
-  write-payload:
+  inject:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -27,13 +22,38 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Inject Content into File
+      - name: Parse and Write Files
         run: |
-          DIR=$(dirname "${{ github.event.inputs.target_file }}")
-          mkdir -p "$DIR"
-          echo "${{ github.event.inputs.file_content }}" > "${{ github.event.inputs.target_file }}"
+          cat << 'EOF' > parser.py
+          import os
+
+          payload = """${{ github.event.inputs.full_payload }}"""
+          
+          # Dosyaları bölmek için özel bir ayırıcı kullanıyoruz: === FILE: yol/adi ===
+          current_file = None
+          current_content = []
+
+          for line in payload.splitlines():
+              if line.startswith("=== FILE:"):
+                  if current_file:
+                      os.makedirs(os.path.dirname(current_file), exist_ok=True)
+                      with open(current_file, "w", encoding="utf-8") as f:
+                          f.write("\n".join(current_content).strip() + "\n")
+                  current_file = line.replace("=== FILE:", "").strip()
+                  current_content = []
+              else:
+                  current_content.append(line)
+
+          if current_file:
+              os.makedirs(os.path.dirname(current_file), exist_ok=True)
+              with open(current_file, "w", encoding="utf-8") as f:
+                  f.write("\n".join(current_content).strip() + "\n")
+          EOF
+
+          python3 parser.py
+          rm parser.py
 
       - name: Commit and Push Changes
         run: |
           git add .
-          git diff --quiet && git diff --staged --quiet || (git commit -m "payload: manual inject into ${{ github.event.inputs.target_file }}" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "feat: manual multi-file payload injection" && git push)
