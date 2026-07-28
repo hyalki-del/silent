@@ -1,30 +1,32 @@
-name: Borderline Manual Multi-File Injector
+name: Borderline Protocol Bootstrap
 
 on:
   workflow_dispatch:
     inputs:
       full_payload:
-        description: 'Tüm dosyaları ve içeriklerini plaintext olarak buraya yapıştır'
+        description: 'Tüm dosya içeriklerini plaintext olarak buraya yapıştır'
         required: true
         type: string
 
 jobs:
-  inject:
+  repair-and-inject:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Git Identity
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Parse and Write Files
+      - name: Execute Parser and Write Files
         run: |
-          cat << 'EOF' > parser.py
+          python3 -c '
           import os
 
           payload = """${{ github.event.inputs.full_payload }}"""
@@ -48,12 +50,10 @@ jobs:
               os.makedirs(os.path.dirname(current_file), exist_ok=True)
               with open(current_file, "w", encoding="utf-8") as f:
                   f.write("\n".join(current_content).strip() + "\n")
-          EOF
-
-          python3 parser.py
-          rm parser.py
+          '
 
       - name: Commit and Push Changes
         run: |
-          git add .
-          git diff --quiet && git diff --staged --quiet || (git commit -m "feat: manual multi-file payload injection" && git push)
+          git add package.json src/data/mockNodes.ts src/app/page.tsx
+          git status
+          git diff --quiet && git diff --staged --quiet || (git commit -m "fix: repair workflow payload injection and push files" && git push)
