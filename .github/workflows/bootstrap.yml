@@ -4,89 +4,97 @@ on:
   workflow_dispatch:
     inputs:
       full_payload:
-        description: "Paste all file contents here in plaintext"
+        description: "Paste all files here"
         required: true
         type: string
 
 jobs:
-  repair-and-inject:
+  inject:
     runs-on: ubuntu-latest
 
     permissions:
       contents: write
 
+    env:
+      FULL_PAYLOAD: ${{ github.event.inputs.full_payload }}
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Git Identity
+      - name: Configure Git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Save Payload
-        run: |
-          cat > payload.txt <<'PAYLOAD'
-${{ github.event.inputs.full_payload }}
-PAYLOAD
-
-      - name: Parse Payload and Write Files
+      - name: Rebuild Repository
+        shell: bash
         run: |
           python3 <<'PYTHON'
-import os
+          import os
+          import sys
 
-with open("payload.txt", "r", encoding="utf-8") as f:
-    payload = f.read()
+          payload = os.environ.get("FULL_PAYLOAD", "")
 
-current_file = None
-current_content = []
+          if not payload.strip():
+              print("Payload is empty.")
+              sys.exit(1)
 
-def write_file(path, lines):
-    directory = os.path.dirname(path)
-    if directory:
-        os.makedirs(directory, exist_ok=True)
+          current_file = None
+          buffer = []
+          written = []
 
-    with open(path, "w", encoding="utf-8", newline="") as f:
-        f.write("\n".join(lines).rstrip("\n") + "\n")
+          def flush():
+              global current_file, buffer
 
-for line in payload.splitlines():
-    stripped = line.strip()
+              if current_file is None:
+                  return
 
-    if stripped.startswith("=== FILE:") and stripped.endswith("==="):
-        if current_file:
-            write_file(current_file, current_content)
+              folder = os.path.dirname(current_file)
+              if folder:
+                  os.makedirs(folder, exist_ok=True)
 
-        current_file = (
-            stripped
-            .replace("=== FILE:", "")
-            .replace("===", "")
-            .strip()
-        )
+              with open(current_file, "w", encoding="utf-8", newline="") as f:
+                  f.write("\n".join(buffer))
 
-        current_content = []
+              written.append(current_file)
 
-    else:
-        current_content.append(line)
+          for line in payload.splitlines():
 
-if current_file:
-    write_file(current_file, current_content)
+              if line.startswith("=== FILE:") and line.endswith("==="):
 
-print("Payload successfully written.")
-PYTHON
+                  flush()
 
-      - name: Remove Temporary Payload
-        run: rm payload.txt
+                  current_file = (
+                      line[len("=== FILE:"):-3]
+                      .strip()
+                  )
 
-      - name: Commit and Push Changes
+                  buffer = []
+
+              else:
+                  buffer.append(line)
+
+          flush()
+
+          print("")
+          print("Files written:")
+          for f in written:
+              print(" -", f)
+
+          print("")
+          print(f"Total: {len(written)} file(s)")
+          PYTHON
+
+      - name: Commit
         run: |
           git add -A
 
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "Nothing changed."
             exit 0
           fi
 
-          git commit -m "fix: automatic payload injection via workflow"
+          git commit -m "Automatic repository update"
           git push
