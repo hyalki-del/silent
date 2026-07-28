@@ -8,6 +8,16 @@ export interface NodeData {
   techStack: string[];
 }
 
+export const MY_NODE: NodeData = {
+  id: "self-node",
+  codename: "Sen / Merkez Node",
+  tier: 1,
+  distanceKm: 0,
+  compatibilityScore: 100,
+  output: "Sistem mimarisi, sıfır gürültü protokolleri ve rasyonel insan eşleme ağı kurucusu.",
+  techStack: ["Architecture", "Next.js", "Systems Design", "Protocol Logic"],
+};
+
 export const MOCK_NODES: NodeData[] = [
   {
     id: "node-01",
