@@ -30,7 +30,7 @@ const TRANSLATIONS = {
     en: {
         settingsBtn: "⚙ Settings", shareLinkBtn: "Share Link", deleteBtn: "Delete",
         participantsTitle: "Participants", participantsSub: "Add or remove people from this group.",
-        namePlaceholder: "Name...", addBtn: "Add", saveMembersBtn: "Save Participants",
+        namePlaceholder: "Name...", addBtn: "Add",
         newExpenseTitle: "New Expense", editExpenseTitle: "Edit Expense",
         newExpenseSub: "Log a transaction to split.", editExpenseSub: "Modify or delete this expense.",
         dateLabel: "Date", categoryLabel: "Category", descLabel: "Description", descPlaceholder: "e.g. Dinner",
@@ -51,7 +51,7 @@ const TRANSLATIONS = {
     tr: {
         settingsBtn: "⚙ Ayarlar", shareLinkBtn: "Bağlantıyı Paylaş", deleteBtn: "Sil",
         participantsTitle: "Katılımcılar", participantsSub: "Bu gruba kişi ekleyin veya çıkarın.",
-        namePlaceholder: "İsim...", addBtn: "Ekle", saveMembersBtn: "Katılımcıları Kaydet",
+        namePlaceholder: "İsim...", addBtn: "Ekle",
         newExpenseTitle: "Yeni Harcama", editExpenseTitle: "Harcamayı Düzenle",
         newExpenseSub: "Bölüştürmek için işlem kaydedin.", editExpenseSub: "Bu harcamayı güncelleyin veya silin.",
         dateLabel: "Tarih", categoryLabel: "Kategori", descLabel: "Açıklama", descPlaceholder: "ör. Akşam Yemeği",
@@ -72,7 +72,7 @@ const TRANSLATIONS = {
     de: {
         settingsBtn: "⚙ Einstellungen", shareLinkBtn: "Link Teilen", deleteBtn: "Löschen",
         participantsTitle: "Teilnehmer", participantsSub: "Personen hinzufügen oder entfernen.",
-        namePlaceholder: "Name...", addBtn: "Hinzufügen", saveMembersBtn: "Teilnehmer Speichern",
+        namePlaceholder: "Name...", addBtn: "Hinzufügen",
         newExpenseTitle: "Neue Ausgabe", editExpenseTitle: "Ausgabe Bearbeiten",
         newExpenseSub: "Transaktion eintragen.", editExpenseSub: "Ändern oder löschen Sie diese Ausgabe.",
         dateLabel: "Datum", categoryLabel: "Kategorie", descLabel: "Beschreibung", descPlaceholder: "z.B. Abendessen",
@@ -105,31 +105,21 @@ function formatToISODate(rawDate) {
     }
 
     const str = rawDate.toString().trim();
-
     if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
 
     const dmyMatch = str.match(/^(\d{1,2})[\.\/-](\d{1,2})[\.\/-](\d{4})$/);
     if (dmyMatch) {
-        const day = dmyMatch[1].padStart(2, '0');
-        const month = dmyMatch[2].padStart(2, '0');
-        const year = dmyMatch[3];
-        return `${year}-${month}-${day}`;
+        return `${dmyMatch[3]}-${dmyMatch[2].padStart(2, '0')}-${dmyMatch[1].padStart(2, '0')}`;
     }
 
     const ymdMatch = str.match(/^(\d{4})[\.\/-](\d{1,2})[\.\/-](\d{1,2})$/);
     if (ymdMatch) {
-        const year = ymdMatch[1];
-        const month = ymdMatch[2].padStart(2, '0');
-        const day = ymdMatch[3].padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return `${ymdMatch[1]}-${ymdMatch[2].padStart(2, '0')}-${ymdMatch[3].padStart(2, '0')}`;
     }
 
     const parsed = new Date(str);
     if (!isNaN(parsed.getTime())) {
-        const year = parsed.getFullYear();
-        const month = String(parsed.getMonth() + 1).padStart(2, '0');
-        const day = String(parsed.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
     }
 
     const fallback = new Date();
@@ -174,12 +164,7 @@ function selectSettingsCurrency(curr) {
 
 function selectSettingsTheme(theme) {
     selectedModalTheme = theme;
-    
-    const themeStyles = {
-        Silk: 'bg-slate-50 text-slate-900',
-        Toon: 'bg-amber-100 text-slate-900',
-        Neon: 'bg-slate-950 text-cyan-400'
-    };
+    const themeStyles = { Silk: 'bg-slate-50 text-slate-900', Toon: 'bg-amber-100 text-slate-900', Neon: 'bg-slate-950 text-cyan-400' };
 
     ['Silk', 'Toon', 'Neon'].forEach(t => {
         const btn = document.getElementById(`setTheme${t}`);
@@ -198,11 +183,9 @@ function openSettingsModal() {
     selectedModalLang = currentLang;
     selectedModalCurrency = currentCurrency;
     selectedModalTheme = currentTheme;
-
     selectSettingsLang(selectedModalLang);
     selectSettingsCurrency(selectedModalCurrency);
     selectSettingsTheme(selectedModalTheme);
-
     document.getElementById('settingsModal')?.classList.remove('hidden'); 
 }
 
@@ -214,18 +197,12 @@ async function saveSettings() {
     currentLang = selectedModalLang;
     currentCurrency = selectedModalCurrency;
     applyTheme(selectedModalTheme);
-
     document.getElementById('settingsModal')?.classList.add('hidden');
     render();
     initTaglineCarousel();
 
     if (currentTab) {
-        const res = await callBackend('updateSettings', {
-            language: currentLang,
-            currency: currentCurrency,
-            theme: currentTheme
-        });
-
+        const res = await callBackend('updateSettings', { language: currentLang, currency: currentCurrency, theme: currentTheme });
         if (res && res.status !== "success") {
             console.warn("[SPENSE Warning] Backend settings save notice:", res?.message);
         }
@@ -239,7 +216,6 @@ let currentTaglineIndex = 0;
 function initTaglineCarousel() {
     const spot = document.getElementById('taglineSpot');
     if (!spot) return;
-
     if (taglineTimer) clearInterval(taglineTimer);
 
     const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
@@ -247,15 +223,11 @@ function initTaglineCarousel() {
     function cycleTagline() {
         const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
         const activeTaglines = t.taglines;
-
         spot.className = "w-full text-center leading-snug";
-        void spot.offsetWidth; // Synchronous DOM reflow force
-
+        void spot.offsetWidth; 
         spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
-
         const randomMotion = motionClasses[Math.floor(Math.random() * motionClasses.length)];
         spot.className = "w-full text-center leading-snug " + randomMotion;
-
         currentTaglineIndex++;
     }
 
@@ -263,7 +235,7 @@ function initTaglineCarousel() {
     taglineTimer = setInterval(cycleTagline, 3200);
 }
 
-// --- CARD REORDERING DRAG ENGINE ---
+// --- REAL-TIME LIVE-PREVIEW DRAG AND DROP ENGINE ---
 function initCardDragging() {
     const container = document.getElementById('appContainer');
     if (!container) return;
@@ -274,45 +246,50 @@ function initCardDragging() {
         if (!card) return;
 
         handle.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', '');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', card.getAttribute('data-card-id'));
             card.classList.add('opacity-40', 'scale-95');
             window._draggedCard = card;
         });
 
         handle.addEventListener('dragend', () => {
             card.classList.remove('opacity-40', 'scale-95');
-            container.querySelectorAll('.theme-card').forEach(c => c.classList.remove('border-amber-400', 'border-4', 'border-dashed'));
+            container.querySelectorAll('.theme-card').forEach(c => {
+                c.classList.remove('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
+            });
             window._draggedCard = null;
         });
 
-        card.addEventListener('dragover', (e) => { e.preventDefault(); });
+        card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        });
 
         card.addEventListener('dragenter', (e) => {
             e.preventDefault();
             if (window._draggedCard && window._draggedCard !== card) {
-                card.classList.add('border-amber-400', 'border-4', 'border-dashed');
+                card.classList.add('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
+                
+                const allCards = Array.from(container.querySelectorAll('.theme-card'));
+                const draggedIndex = allCards.indexOf(window._draggedCard);
+                const targetIndex = allCards.indexOf(card);
+
+                if (draggedIndex < targetIndex) {
+                    container.insertBefore(window._draggedCard, card.nextSibling);
+                } else {
+                    container.insertBefore(window._draggedCard, card);
+                }
             }
         });
 
         card.addEventListener('dragleave', () => {
-            card.classList.remove('border-amber-400', 'border-4', 'border-dashed');
+            card.classList.remove('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
         });
 
         card.addEventListener('drop', (e) => {
             e.preventDefault();
-            card.classList.remove('border-amber-400', 'border-4', 'border-dashed');
-
-            if (window._draggedCard && window._draggedCard !== card) {
-                const dragged = window._draggedCard;
-                const parent = card.parentNode;
-
-                const tempNode = document.createTextNode('');
-                parent.replaceChild(tempNode, dragged);
-                parent.replaceChild(dragged, card);
-                parent.replaceChild(card, tempNode);
-
-                document.getElementById('layoutActionBar')?.classList.remove('hidden');
-            }
+            card.classList.remove('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
+            document.getElementById('layoutActionBar')?.classList.remove('hidden');
         });
     });
 }
@@ -377,7 +354,6 @@ async function callBackend(action, payload = {}) {
     }
 }
 
-// --- ARCHIVE LOADER WITH METADATA EXCLUSION ---
 async function loadGoogleSheetsArchive() {
     const select = document.getElementById('archiveSelect');
     if (!select) return;
@@ -398,20 +374,13 @@ async function loadGoogleSheetsArchive() {
         
         const rawData = await res.json();
         let ledgers = [];
-        
         if (Array.isArray(rawData)) {
             ledgers = rawData;
         } else if (typeof rawData === 'object' && rawData !== null) {
             ledgers = rawData.archives || rawData.sheets || rawData.ledgers || Object.keys(rawData);
         }
 
-        // CRITICAL: Filter out system tables like metadata and counter so they never appear in dropdowns
-        ledgers = ledgers
-            .filter(Boolean)
-            .filter(name => {
-                const lower = name.toString().trim().toLowerCase();
-                return lower !== 'metadata' && lower !== 'counter';
-            });
+        ledgers = ledgers.filter(Boolean).filter(name => name.toString().trim().toLowerCase() !== 'metadata');
 
         if (ledgers.length === 0) {
             select.innerHTML = `<option value="">-- No archives found --</option>`;
@@ -427,7 +396,6 @@ async function loadGoogleSheetsArchive() {
     }
 }
 
-// --- WELCOME MODAL CORE NAVIGATION ---
 function switchModalTab(tabMode) {
     const createSec = document.getElementById('createSection');
     const recallSec = document.getElementById('recallSection');
@@ -457,7 +425,6 @@ function switchModalTab(tabMode) {
 async function createNewLedger() {
     const nameInput = document.getElementById('newLedgerName');
     const pinInput = document.getElementById('newLedgerPin');
-
     const nameVal = nameInput?.value.trim().toLowerCase().replace(/\s+/g, '-');
     const pinVal = pinInput?.value.trim();
 
@@ -467,17 +434,9 @@ async function createNewLedger() {
     }
 
     const initialOrder = getCurrentCardOrder();
-    const res = await callBackend('createLedger', { 
-        name: nameVal, 
-        pin: pinVal, 
-        theme: currentTheme, 
-        currency: currentCurrency, 
-        language: currentLang,
-        cardOrder: initialOrder 
-    });
+    const res = await callBackend('createLedger', { name: nameVal, pin: pinVal, theme: currentTheme, currency: currentCurrency, language: currentLang, cardOrder: initialOrder });
 
     if (res && res.status === "success") {
-        // CRITICAL: Force currentTab to be the exact server-generated tab name with the date prefix
         currentTab = res.createdTab;
         currentPin = pinVal;
         ledgerData = { members: [], expenses: [] };
@@ -492,7 +451,6 @@ async function createNewLedger() {
 async function recallLedger() {
     const archiveSelect = document.getElementById('archiveSelect');
     const pinInput = document.getElementById('recallLedgerPin');
-
     const targetLedger = archiveSelect?.value;
     const pinVal = pinInput?.value.trim();
 
@@ -503,12 +461,8 @@ async function recallLedger() {
 
     try {
         const sheetUrl = await getConfig();
-        if (!sheetUrl) {
-            alert("Missing configuration URL.");
-            return;
-        }
+        if (!sheetUrl) { alert("Missing configuration URL."); return; }
 
-        // Uses original working GET query parameter protocol expected by original Code.gs doGet
         const res = await fetch(`${sheetUrl}?tab=${encodeURIComponent(targetLedger)}&pin=${encodeURIComponent(pinVal)}`);
         const data = await res.json();
 
@@ -523,16 +477,12 @@ async function recallLedger() {
             if (data.cardOrder) applyCardOrder(data.cardOrder);
 
             const rawMembers = Array.isArray(data.members) ? data.members : [];
-            const cleanServerMembers = rawMembers
-                .map(m => (m || '').toString().trim())
-                .filter(m => m.length > 0 && m.toLowerCase() !== 'members');
+            const cleanServerMembers = rawMembers.map(m => (m || '').toString().trim()).filter(m => m.length > 0 && m.toLowerCase() !== 'members');
 
             const memberMap = new Map();
             [...cleanServerMembers, ...unsavedMembers].forEach(m => {
                 const lower = m.toLowerCase();
-                if (!memberMap.has(lower)) {
-                    memberMap.set(lower, m);
-                }
+                if (!memberMap.has(lower)) memberMap.set(lower, m);
             });
 
             ledgerData.members = Array.from(memberMap.values());
@@ -577,72 +527,40 @@ async function deleteActiveLedger() {
     goHome();
 }
 
-// --- PARTICIPANTS STAGING & AUTO-PERSIST MODULE ---
-async function addMemberDirect() {
+// --- AUTO-PERSIST PARTICIPANT ENGINE (NO SAVE BUTTON REQUIRED) ---
+async function stageMember() {
     const input = document.getElementById('memberName');
     if (!input) return;
     const name = input.value.trim();
     if (!name) return;
 
-    if (!currentTab) { 
-        alert("Access or initialize a ledger first."); 
-        return; 
-    }
-    
-    if (ledgerData.members.some(m => m.toLowerCase() === name.toLowerCase())) { 
-        alert("Participant already exists."); 
-        input.value = ''; 
-        return; 
-    }
+    if (!currentTab) { alert("Access or initialize a ledger first."); return; }
+    if (ledgerData.members.some(m => m.toLowerCase() === name.toLowerCase())) { alert("Participant already exists."); input.value = ''; return; }
 
     ledgerData.members.push(name);
     if (!unsavedMembers.includes(name)) unsavedMembers.push(name);
     input.value = '';
     render();
 
+    // Persist immediately in background, updating pill styling upon success
     const res = await callBackend('addMembers', { names: [name] });
     if (res && res.status === "success") {
         unsavedMembers = unsavedMembers.filter(m => m !== name);
         render();
     } else {
-        console.warn("[SPENSE Warning] Background sync failed for participant:", name);
-    }
-}
-
-async function saveMembers() {
-    if (unsavedMembers.length === 0) return;
-
-    const btn = document.getElementById('btnSaveMembers');
-    if (btn) btn.innerText = "Saving...";
-
-    const res = await callBackend('addMembers', { names: unsavedMembers });
-    if (res && res.status === "success") {
-        unsavedMembers = [];
-        render();
-        alert("Participants saved to sheet!");
-    } else {
-        alert("Failed to save participants: " + (res?.message || "Error"));
-        render();
+        console.warn("[SPENSE Warning] Background sync pending for participant:", name);
     }
 }
 
 async function deleteMember(name, event) {
-    if (event) {
-        event.stopPropagation();
-        event.preventDefault();
-    }
-
+    if (event) { event.stopPropagation(); event.preventDefault(); }
     if (!name) return;
-    
     const canonicalName = findMemberCanonical(name);
-
     if (!confirm(`Are you sure you want to remove participant '${canonicalName}'?`)) return;
 
     const targetLower = canonicalName.toLowerCase();
-    
     ledgerData.members = ledgerData.members.filter(m => m.toLowerCase() !== targetLower);
     unsavedMembers = unsavedMembers.filter(m => m.toLowerCase() !== targetLower);
-
     render();
 
     const res = await callBackend('removeMember', { name: canonicalName });
@@ -651,12 +569,15 @@ async function deleteMember(name, event) {
     }
 }
 
-// --- EXPENSE EDITING & VALIDATION ---
+// --- COMPLETE EXPENSE EDITING & GENERIC SELECTION FIX ---
 function startEditExpense(id) {
     const exp = ledgerData.expenses.find(e => e.id.toString() === id.toString());
     if (!exp) return;
 
     editingExpenseId = id.toString();
+
+    renderDropdowns();
+    renderSplitCheckboxes();
 
     const dateInput = document.getElementById('expenseDate');
     const descInput = document.getElementById('expenseDesc');
@@ -664,21 +585,25 @@ function startEditExpense(id) {
     const catInput = document.getElementById('expenseCategory');
     const paidByInput = document.getElementById('expensePaidBy');
 
-    if (dateInput) {
-        dateInput.value = formatToISODate(exp.date);
-    }
-
+    if (dateInput) dateInput.value = formatToISODate(exp.date);
     if (descInput) descInput.value = exp.desc || '';
     if (amountInput) amountInput.value = exp.amount || '';
     if (catInput) catInput.value = exp.category || 'Food & Drink';
-    if (paidByInput) paidByInput.value = findMemberCanonical(exp.paidBy) || '';
+
+    if (paidByInput) {
+        const canonicalPayer = findMemberCanonical(exp.paidBy);
+        paidByInput.value = canonicalPayer;
+        if (!paidByInput.value && paidByInput.options.length > 0) {
+            paidByInput.selectedIndex = 0;
+        }
+    }
 
     const splitArr = (Array.isArray(exp.splitWith) ? exp.splitWith : (exp.splitBetween || [])).map(s => s.toLowerCase());
     document.querySelectorAll('.split-checkbox').forEach(cb => {
         cb.checked = splitArr.includes(cb.value.toLowerCase());
     });
 
-    render();
+    renderExpenseFormHeader();
     document.getElementById('expenseFormSection')?.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -697,6 +622,7 @@ function resetExpenseForm() {
     const dateInput = document.getElementById('expenseDate');
     if (dateInput) dateInput.value = formatToISODate(new Date());
 
+    // CRITICAL REQUIREMENT: When entering a new expense, all participants are selected as generic (checked)
     document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = true);
 }
 
@@ -724,7 +650,6 @@ async function updateExpense() {
     }
 
     const category = document.getElementById('expenseCategory')?.value || "General";
-
     const idx = ledgerData.expenses.findIndex(e => e.id.toString() === editingExpenseId);
     if (idx !== -1) {
         ledgerData.expenses[idx] = { id: editingExpenseId, date, category, desc, amount, paidBy, splitWith };
@@ -744,7 +669,6 @@ async function deleteExpenseFromEdit() {
 
     const targetId = editingExpenseId;
     ledgerData.expenses = ledgerData.expenses.filter(e => e.id.toString() !== targetId);
-    
     editingExpenseId = null;
     resetExpenseForm();
     render();
@@ -783,7 +707,6 @@ async function addExpense() {
     await callBackend('addExpense', { id, date, category, desc, amount, paidBy, splitWith });
 }
 
-// --- CASE-INSENSITIVE SETTLEMENT COMPUTATION ALGORITHM ---
 function calculateSettlement() {
     const balances = {};
     const lowerMap = {};
@@ -804,14 +727,10 @@ function calculateSettlement() {
         const share = amt / splitList.length;
         const payerKey = (e.paidBy || '').toLowerCase();
 
-        if (balances[payerKey] !== undefined) {
-            balances[payerKey] += amt;
-        }
+        if (balances[payerKey] !== undefined) balances[payerKey] += amt;
 
         splitList.forEach(mKey => {
-            if (balances[mKey] !== undefined) {
-                balances[mKey] -= share;
-            }
+            if (balances[mKey] !== undefined) balances[mKey] -= share;
         });
     });
 
@@ -828,10 +747,8 @@ function calculateSettlement() {
     while (i < debtors.length && j < creditors.length) {
         const minAmt = Math.min(debtors[i].amount, creditors[j].amount);
         transactions.push(`${debtors[i].member} owes ${creditors[j].member} ${getCurrencySymbol()}${minAmt.toFixed(2)}`);
-
         debtors[i].amount -= minAmt;
         creditors[j].amount -= minAmt;
-
         if (debtors[i].amount < 0.01) i++;
         if (creditors[j].amount < 0.01) j++;
     }
@@ -841,34 +758,25 @@ function calculateSettlement() {
 
 function copySettlementSummary() {
     const txs = calculateSettlement();
-    if (txs.length === 0) {
-        alert("No settlement balances to copy.");
-        return;
-    }
+    if (txs.length === 0) { alert("No settlement balances to copy."); return; }
 
     const summaryText = `=== SPENSE SETTLEMENT MATRIX ===\nLedger: ${currentTab || 'General'}\nDate: ${new Date().toLocaleDateString()}\n--------------------------------\n` + 
-        txs.join('\n') + 
-        `\n================================`;
+        txs.join('\n') + `\n================================`;
 
     navigator.clipboard.writeText(summaryText).then(() => {
         alert("Settlement summary copied to clipboard as plain text!");
     }).catch(err => {
         console.error("Copy failed:", err);
-        alert("Failed to copy automatically. Summary:\n\n" + summaryText);
+        alert("Failed to copy automatically.");
     });
 }
 
-// --- REPORT GENERATOR (NEW TAB RENDERER) ---
-function generateLedgerReport() {
-    if (!currentTab) {
-        alert("Please open an active ledger first.");
-        return;
-    }
+function generateReport() {
+    if (!currentTab) { alert("Please open an active ledger first."); return; }
 
     const sym = getCurrencySymbol();
     let totalSpent = 0;
     ledgerData.expenses.forEach(e => totalSpent += (parseFloat(e.amount) || 0));
-
     const settlement = calculateSettlement();
 
     let report = `====================================================\n`;
@@ -881,11 +789,8 @@ function generateLedgerReport() {
     report += `====================================================\n\n`;
 
     report += `--- SETTLEMENT MATRIX ---\n`;
-    if (settlement.length > 0) {
-        settlement.forEach(s => report += `• ${s}\n`);
-    } else {
-        report += `All balances are currently settled!\n`;
-    }
+    if (settlement.length > 0) settlement.forEach(s => report += `• ${s}\n`);
+    else report += `All balances are currently settled!\n`;
     report += `\n----------------------------------------------------\n\n`;
 
     report += `--- ITEMIZED TRANSACTION HISTORY ---\n`;
@@ -905,10 +810,7 @@ function generateLedgerReport() {
     const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
     const reportUrl = URL.createObjectURL(blob);
     const reportWindow = window.open(reportUrl, '_blank');
-
-    if (!reportWindow) {
-        alert("Pop-up blocked! Please allow pop-ups for this site to view the report in a new tab.");
-    }
+    if (!reportWindow) alert("Pop-up blocked! Please allow pop-ups for this site.");
 }
 
 function getCurrencySymbol() {
@@ -926,11 +828,10 @@ function switchLanguage(lang) {
     initTaglineCarousel();
 }
 
-function selectAllSplits() {
-    document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = true);
+function toggleSelectAll(select) {
+    document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = select);
 }
 
-// --- MASTER UI RENDERING ENGINE ---
 function render() {
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
 
@@ -945,17 +846,16 @@ function render() {
     });
 
     const currSym = getCurrencySymbol();
-    const symbolEl = document.getElementById('currencySymbol');
-    if (symbolEl) symbolEl.innerText = currSym;
+    document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = currSym);
 
     const indicatorEl = document.getElementById('viewModeIndicator');
     if (indicatorEl) {
         indicatorEl.innerHTML = currentTab ? 
-            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
-            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>`;
+            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5">${currentTab.toUpperCase()}</span>` :
+            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5">AWAITING AUTHENTICATION...</span>`;
     }
 
-    ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings'].forEach(id => {
+    ['deleteLedgerBtn', 'shareBtn', 'settingsBtn'].forEach(id => {
         document.getElementById(id)?.classList.toggle('hidden', !currentTab);
     });
 
@@ -969,31 +869,22 @@ function render() {
 
 function renderMembers() {
     const container = document.getElementById('memberList');
-    const saveBtn = document.getElementById('btnSaveMembers');
     if (!container) return;
     
     container.innerHTML = ledgerData.members.length > 0 
         ? ledgerData.members.map(m => `
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl ${unsavedMembers.includes(m) ? 'bg-amber-200 text-amber-900 border border-amber-400' : 'bg-slate-200 text-slate-800'} font-bold">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl ${unsavedMembers.includes(m) ? 'bg-amber-200 text-amber-900 border border-amber-400 animate-pulse' : 'bg-slate-200 text-slate-800'} font-bold transition-colors duration-300">
                 ${escapeHTML(m)}
-                <button type="button" data-member="${escapeHTML(m)}" onclick="window.deleteMember(this.getAttribute('data-member'), event)" class="text-rose-600 hover:text-rose-800 font-black text-xs ml-1 cursor-pointer" title="Remove participant">×</button>
+                <button type="button" data-member="${escapeHTML(m)}" onclick="deleteMember(this.getAttribute('data-member'), event)" class="text-rose-600 hover:text-rose-800 font-black text-xs ml-1 cursor-pointer" title="Remove participant">×</button>
             </span>
         `).join('') 
         : '<span class="opacity-60 italic">No participants yet.</span>';
-
-    if (saveBtn) {
-        if (unsavedMembers.length > 0) {
-            saveBtn.classList.remove('hidden');
-        } else {
-            saveBtn.classList.add('hidden');
-        }
-    }
 }
 
 function renderExpenseFormHeader() {
     const titleEl = document.getElementById('expenseFormTitle');
     const subEl = document.getElementById('expenseFormSub');
-    const actionsContainer = document.getElementById('expenseFormActions');
+    const actionsContainer = document.getElementById('expenseFormButtons');
     if (!titleEl || !subEl || !actionsContainer) return;
 
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
@@ -1003,16 +894,16 @@ function renderExpenseFormHeader() {
         subEl.innerText = t.editExpenseSub;
         actionsContainer.innerHTML = `
             <div class="grid grid-cols-3 gap-2">
-                <button type="button" onclick="window.deleteExpenseFromEdit()" class="theme-btn bg-rose-500 hover:bg-rose-600 text-white py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.deleteExpenseBtn}</button>
-                <button type="button" onclick="window.cancelEditExpense()" class="theme-btn bg-slate-200 hover:bg-slate-300 text-slate-800 py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.cancelEditBtn}</button>
-                <button type="button" onclick="window.updateExpense()" class="theme-btn bg-emerald-400 hover:bg-emerald-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.updateExpenseBtn}</button>
+                <button type="button" onclick="deleteExpenseFromEdit()" class="theme-btn bg-rose-500 hover:bg-rose-600 text-white py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.deleteExpenseBtn}</button>
+                <button type="button" onclick="cancelEditExpense()" class="theme-btn bg-slate-200 hover:bg-slate-300 text-slate-800 py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.cancelEditBtn}</button>
+                <button type="button" onclick="updateExpense()" class="theme-btn bg-emerald-400 hover:bg-emerald-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.updateExpenseBtn}</button>
             </div>
         `;
     } else {
         titleEl.innerText = t.newExpenseTitle;
         subEl.innerText = t.newExpenseSub;
         actionsContainer.innerHTML = `
-            <button id="btnRecordExpense" type="button" onclick="window.addExpense()" data-i18n="recordExpenseBtn" class="w-full theme-btn py-3 text-sm font-extrabold cursor-pointer rounded-xl">${t.recordExpenseBtn}</button>
+            <button type="button" onclick="addExpense()" data-i18n="recordExpenseBtn" class="w-full theme-btn py-3 text-sm font-extrabold cursor-pointer rounded-xl">${t.recordExpenseBtn}</button>
         `;
     }
 }
@@ -1037,7 +928,7 @@ function renderSplitCheckboxes() {
     container.innerHTML = ledgerData.members.length > 0
         ? ledgerData.members.map(m => `
             <label class="flex items-center gap-1.5 cursor-pointer bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-300 font-semibold">
-                <input type="checkbox" value="${escapeHTML(m)}" ${selectedValues.length === 0 || selectedValues.includes(m.toLowerCase()) ? 'checked' : ''} class="split-checkbox accent-slate-900 cursor-pointer"> ${escapeHTML(m)}
+                <input type="checkbox" value="${escapeHTML(m)}" ${editingExpenseId ? (selectedValues.includes(m.toLowerCase()) ? 'checked' : '') : 'checked'} class="split-checkbox accent-slate-900 cursor-pointer"> ${escapeHTML(m)}
             </label>
         `).join('')
         : '<span class="opacity-60 italic">Add participants first.</span>';
@@ -1062,7 +953,7 @@ function renderHistory() {
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <span class="font-extrabold text-sm">${getCurrencySymbol()}${parseFloat(e.amount).toFixed(2)}</span>
-                    <button type="button" data-id="${e.id}" onclick="window.startEditExpense(this.getAttribute('data-id'))" class="theme-btn px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-300 text-slate-900 cursor-pointer hover:bg-amber-400">Edit</button>
+                    <button type="button" data-id="${e.id}" onclick="startEditExpense(this.getAttribute('data-id'))" class="theme-btn px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-300 text-slate-900 cursor-pointer hover:bg-amber-400">Edit</button>
                 </div>
             </li>
         `;
@@ -1090,22 +981,18 @@ function escapeHTML(str) {
     return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
 }
 
-// --- GLOBAL WINDOW EXPORTS ---
+// --- GLOBAL WINDOW BINDINGS ---
 window.switchModalTab = switchModalTab;
 window.createNewLedger = createNewLedger;
 window.recallLedger = recallLedger;
 window.openSettingsModal = openSettingsModal;
 window.closeSettingsModal = closeSettingsModal;
-window.selectSettingsLang = selectSettingsLang;
-window.selectSettingsCurrency = selectSettingsCurrency;
-window.selectSettingsTheme = selectSettingsTheme;
 window.openShareModal = openShareModal;
 window.closeShareModal = closeShareModal;
 window.copyShareLink = copyShareLink;
 window.goHome = goHome;
 window.deleteActiveLedger = deleteActiveLedger;
-window.addMemberDirect = addMemberDirect;
-window.saveMembers = saveMembers;
+window.stageMember = stageMember;
 window.deleteMember = deleteMember;
 window.addExpense = addExpense;
 window.startEditExpense = startEditExpense;
@@ -1113,13 +1000,13 @@ window.cancelEditExpense = cancelEditExpense;
 window.updateExpense = updateExpense;
 window.deleteExpenseFromEdit = deleteExpenseFromEdit;
 window.copySettlementSummary = copySettlementSummary;
-window.generateLedgerReport = generateLedgerReport;
+window.generateReport = generateReport;
 window.switchLanguage = switchLanguage;
 window.saveCardLayout = saveCardLayout;
-window.selectAllSplits = selectAllSplits;
+window.toggleSelectAll = toggleSelectAll;
 window.saveSettings = saveSettings;
+window.applyTheme = applyTheme;
 
-// --- INITIALIZE SYSTEM ENGINE ---
 document.addEventListener('DOMContentLoaded', () => {
     initTaglineCarousel();
     initCardDragging();
