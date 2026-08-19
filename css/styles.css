@@ -65,10 +65,10 @@ body {
     border: 2px solid var(--border-color);
     border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
-    transition: box-shadow 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
+    transition: box-shadow 0.2s ease, background-color 0.3s ease, border-color 0.3s ease, opacity 0.2s ease, transform 0.2s ease;
     position: relative;
     min-width: 280px;
-    min-height: 150px;
+    min-height: 140px;
     overflow: hidden;
 }
 
@@ -80,48 +80,47 @@ body {
     border-bottom-width: 3px;
 }
 
-/* --- Landing Carousel Slide Transition Engine --- */
-#taglineSpot {
-    transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
-    will-change: transform, opacity;
+/* --- HARDWARE-ACCELERATED 4-DIRECTIONAL KEYFRAME TAGLINE ENGINE --- */
+@keyframes animLeft {
+    0% { transform: translateX(-120%); opacity: 0; }
+    15%, 85% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(120%); opacity: 0; }
+}
+@keyframes animRight {
+    0% { transform: translateX(120%); opacity: 0; }
+    15%, 85% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-120%); opacity: 0; }
+}
+@keyframes animTop {
+    0% { transform: translateY(-120%); opacity: 0; }
+    15%, 85% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(120%); opacity: 0; }
+}
+@keyframes animBottom {
+    0% { transform: translateY(120%); opacity: 0; }
+    15%, 85% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-120%); opacity: 0; }
 }
 
-.slide-out-left {
-    transform: translateX(-100%);
-    opacity: 0;
-}
+.motion-left   { animation: animLeft 3.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.motion-right  { animation: animRight 3.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.motion-top    { animation: animTop 3.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.motion-bottom { animation: animBottom 3.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 
-.slide-in-right {
-    transform: translateX(100%);
-    opacity: 0;
+/* --- Drag Handle Styling --- */
+.card-drag-handle {
+    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; cursor: grab; z-index: 30;
+    background: rgba(0,0,0,0.06); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; opacity: 0.6; transition: opacity 0.2s, background 0.2s; user-select: none;
 }
+.card-drag-handle:hover { opacity: 1; background: rgba(0,0,0,0.12); }
 
-.slide-reset {
-    transform: translateX(0);
-    opacity: 1;
-}
-
-/* --- Corner Resize Grip Handle --- */
-.resize-handle {
-    position: absolute;
-    right: 4px;
-    bottom: 4px;
-    width: 14px;
-    height: 14px;
-    cursor: nwse-resize;
-    z-index: 20;
-    opacity: 0.4;
-    transition: opacity 0.2s ease;
-    background: linear-gradient(135deg, transparent 50%, currentColor 50%);
-}
-
-.theme-card:hover .resize-handle {
-    opacity: 0.8;
-}
-
-body.is-resizing {
-    user-select: none !important;
-    cursor: nwse-resize !important;
+/* --- Settings Active Selection Framing --- */
+.option-btn-selected {
+    border-color: #0f172a !important;
+    background-color: #fef3c7 !important;
+    box-shadow: 0 0 0 2px #0f172a !important;
+    transform: scale(1.02);
 }
 
 /* --- Form Controls & Inputs --- */
@@ -175,27 +174,6 @@ body.is-resizing {
 [data-theme="toon"] .theme-btn:active {
     transform: translate(2px, 2px);
     box-shadow: 1px 1px 0px #0f172a;
-}
-
-/* ==========================================
-   Settlement Matrix Frame Highlighting (.theme-frame-4)
-   ========================================== */
-[data-theme="silk"] .theme-frame-4 {
-    background-color: #f1f5f9;
-    border: 2.5px solid #64748b;
-    box-shadow: 0 10px 20px -3px rgba(15, 23, 42, 0.12);
-}
-
-[data-theme="toon"] .theme-frame-4 {
-    background-color: #fef08a;
-    border: 4px solid #0f172a;
-    box-shadow: 6px 6px 0px #0f172a;
-}
-
-[data-theme="neon"] .theme-frame-4 {
-    background-color: #0e1424;
-    border: 2.5px solid #f43f5e;
-    box-shadow: 0 0 25px rgba(244, 63, 94, 0.3);
 }
 
 /* --- Processing Scanner Bar Animation --- */
