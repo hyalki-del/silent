@@ -87,7 +87,7 @@
                 <div class="space-y-2 pt-2 border-t border-current/10">
                     <div class="flex justify-between items-center">
                         <label data-i18n="splitBetweenLabel" class="text-[10px] font-black uppercase tracking-wider opacity-70">Split Between:</label>
-                        <button id="btnSelectAllSplits" type="button" onclick="window.selectAllSplits()" data-i18n="selectAllBtn" class="text-xs font-bold opacity-80 hover:opacity-100 underline cursor-pointer">Select All</button>
+                        <button id="btnSelectAllSplits" type="button" onclick="window.toggleSelectAll(true)" data-i18n="selectAllBtn" class="text-xs font-bold opacity-80 hover:opacity-100 underline cursor-pointer">Select All</button>
                     </div>
                     <div id="splitCheckboxes" class="flex flex-wrap gap-2 pt-1 text-xs"></div>
                 </div>
@@ -229,7 +229,7 @@
         </div>
     </div>
 
-    <!-- Main Controller Script -->
+    <!-- App Controller Script -->
     <script src="js/app.js"></script>
 </body>
 </html>
