@@ -1,14 +1,14 @@
 /**
  * ==========================================================================
  * SPENSE - Group Expense Tracker Main Controller
- * CS Senior Architecture: Corrected Header Buttons, Silent Auto-Save Layout,
- *                        Unified Window Bindings & Drag Engine
+ * CS Senior Architecture: Corrected Header Buttons, Background Drag Engine,
+ *                        and Unified Window Bindings
  * ==========================================================================
  */
 
 console.log("%c[SPENSE] Engine & Controller Loaded Successfully.", "color: #059669; font-weight: bold;");
 
-// --- Global Application State ---
+// Global Application State
 let currentTab = null;
 let currentPin = null;
 let currentLang = 'en';
@@ -21,11 +21,10 @@ let selectedModalLang = 'en';
 let selectedModalCurrency = 'USD';
 let selectedModalTheme = 'Silk';
 
-// Staging & Edit State Variables
 let unsavedMembers = [];
 let editingExpenseId = null;
 
-// --- Internationalization Dictionary ---
+// Consolidated Internationalization Dictionary
 const TRANSLATIONS = {
     en: {
         settingsBtn: "⚙ Settings", shareLinkBtn: "Share Link", deleteBtn: "Delete",
@@ -180,7 +179,7 @@ async function saveSettings() {
     }
 }
 
-/* AUTOMATIC BACKGROUND DRAG & DROP ENGINE */
+// Background Card Drag & Drop Auto-Save Engine
 function initCardDragging() {
     const container = document.getElementById('appContainer');
     if (!container) return;
@@ -379,7 +378,6 @@ async function deleteActiveLedger() {
     goHome();
 }
 
-/* PARTICIPANT ADDITION WITH INSTANT PERSISTENCE */
 async function stageMember() {
     const input = document.getElementById('memberName');
     if (!input) return;
@@ -654,7 +652,7 @@ function renderMembers() {
     if (!container) return;
     container.innerHTML = ledgerData.members.length > 0 
         ? ledgerData.members.map(m => `
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl ${unsavedMembers.includes(m) ? 'bg-amber-200 text-amber-900 border border-amber-400 animate-pulse' : 'bg-slate-200 text-slate-800'} font-bold">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl ${unsavedMembers.includes(m) ? 'bg-amber-200 text-amber-900 border border-amber-400' : 'bg-slate-200 text-slate-800'} font-bold">
                 ${escapeHTML(m)}
                 <button type="button" data-member="${escapeHTML(m)}" onclick="window.deleteMember(this.getAttribute('data-member'), event)" class="text-rose-600 hover:text-rose-800 font-black text-xs ml-1 cursor-pointer" title="Remove participant">×</button>
             </span>
@@ -770,7 +768,7 @@ function initTaglineCarousel() {
     taglineTimer = setInterval(cycleTagline, 3200);
 }
 
-// Global Window Bindings
+// Window Object Function Bindings
 window.switchModalTab = switchModalTab;
 window.createNewLedger = createNewLedger;
 window.recallLedger = recallLedger;
