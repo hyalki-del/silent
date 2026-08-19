@@ -2,12 +2,13 @@
  * ==========================================================================
  * SPENSE - Group Expense Tracker Main Controller
  * CS Senior Architecture: Corrected Header Buttons, Silent Auto-Save Layout,
- *                        and Unified Window Bindings
+ *                        Unified Window Bindings & Drag Engine
  * ==========================================================================
  */
 
 console.log("%c[SPENSE] Engine & Controller Loaded Successfully.", "color: #059669; font-weight: bold;");
 
+// --- Global Application State ---
 let currentTab = null;
 let currentPin = null;
 let currentLang = 'en';
@@ -15,13 +16,16 @@ let currentCurrency = 'USD';
 let currentTheme = 'Silk';
 let ledgerData = { members: [], expenses: [] };
 
+// Settings Modal Staging State
 let selectedModalLang = 'en';
 let selectedModalCurrency = 'USD';
 let selectedModalTheme = 'Silk';
 
+// Staging & Edit State Variables
 let unsavedMembers = [];
 let editingExpenseId = null;
 
+// --- Internationalization Dictionary ---
 const TRANSLATIONS = {
     en: {
         settingsBtn: "⚙ Settings", shareLinkBtn: "Share Link", deleteBtn: "Delete",
@@ -176,7 +180,7 @@ async function saveSettings() {
     }
 }
 
-/* AUTOMATIC SILENT BACKROUND DRAG & DROP PERSISTENCE */
+/* AUTOMATIC BACKGROUND DRAG & DROP ENGINE */
 function initCardDragging() {
     const container = document.getElementById('appContainer');
     if (!container) return;
@@ -216,7 +220,6 @@ function initCardDragging() {
 
         card.addEventListener('drop', (e) => {
             e.preventDefault();
-            // Silent background auto-save to backend sheet
             if (currentTab) {
                 const newOrder = getCurrentCardOrder();
                 callBackend('updateSettings', { cardOrder: newOrder });
@@ -376,7 +379,7 @@ async function deleteActiveLedger() {
     goHome();
 }
 
-/* PARTICIPANT ADDITION FUNCTION WITH AUTO-SYNC */
+/* PARTICIPANT ADDITION WITH INSTANT PERSISTENCE */
 async function stageMember() {
     const input = document.getElementById('memberName');
     if (!input) return;
@@ -552,7 +555,6 @@ function copySettlementSummary() {
     navigator.clipboard.writeText(text).then(() => alert("Copied summary to clipboard!"));
 }
 
-/* REPORT GENERATOR ENGINE */
 function generateReport() {
     if (!currentTab) { alert("Please access a ledger first."); return; }
     const sym = getCurrencySymbol();
@@ -635,7 +637,6 @@ function render() {
             `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>`;
     }
 
-    // Toggle header action buttons visibility
     ['deleteLedgerBtn', 'shareBtn', 'settingsBtn'].forEach(id => {
         document.getElementById(id)?.classList.toggle('hidden', !currentTab);
     });
@@ -769,7 +770,7 @@ function initTaglineCarousel() {
     taglineTimer = setInterval(cycleTagline, 3200);
 }
 
-/* GLOBAL WINDOW BINDINGS */
+// Global Window Bindings
 window.switchModalTab = switchModalTab;
 window.createNewLedger = createNewLedger;
 window.recallLedger = recallLedger;
