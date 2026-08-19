@@ -126,203 +126,10 @@ function formatToISODate(rawDate) {
     return `${fallback.getFullYear()}-${String(fallback.getMonth() + 1).padStart(2, '0')}-${String(fallback.getDate()).padStart(2, '0')}`;
 }
 
-// Case-Insensitive Canonical Name Matcher
 function findMemberCanonical(targetName) {
     if (!targetName) return targetName;
     const match = ledgerData.members.find(m => m.toLowerCase() === targetName.toLowerCase());
     return match || targetName;
-}
-
-// --- SETTINGS SELECTION ENGINE ---
-function selectSettingsLang(lang) {
-    selectedModalLang = lang;
-    ['tr', 'en', 'de'].forEach(l => {
-        const btn = document.getElementById(`setLang${l.toUpperCase()}`);
-        if (btn) {
-            if (l === lang) {
-                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected";
-            } else {
-                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
-            }
-        }
-    });
-}
-
-function selectSettingsCurrency(curr) {
-    selectedModalCurrency = curr;
-    ['USD', 'EUR', 'TRY'].forEach(c => {
-        const btn = document.getElementById(`setCurr${c}`);
-        if (btn) {
-            if (c === curr) {
-                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected";
-            } else {
-                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
-            }
-        }
-    });
-}
-
-function selectSettingsTheme(theme) {
-    selectedModalTheme = theme;
-    const themeStyles = { Silk: 'bg-slate-50 text-slate-900', Toon: 'bg-amber-100 text-slate-900', Neon: 'bg-slate-950 text-cyan-400' };
-
-    ['Silk', 'Toon', 'Neon'].forEach(t => {
-        const btn = document.getElementById(`setTheme${t}`);
-        if (btn) {
-            const baseBg = themeStyles[t] || 'bg-slate-50';
-            if (t === theme) {
-                btn.className = `theme-btn py-3 px-2 ${baseBg} rounded-xl text-center transition cursor-pointer option-btn-selected`;
-            } else {
-                btn.className = `theme-btn py-3 px-2 border-2 border-slate-200 ${baseBg} rounded-xl text-center transition cursor-pointer opacity-50`;
-            }
-        }
-    });
-}
-
-function openSettingsModal() { 
-    selectedModalLang = currentLang;
-    selectedModalCurrency = currentCurrency;
-    selectedModalTheme = currentTheme;
-    selectSettingsLang(selectedModalLang);
-    selectSettingsCurrency(selectedModalCurrency);
-    selectSettingsTheme(selectedModalTheme);
-    document.getElementById('settingsModal')?.classList.remove('hidden'); 
-}
-
-function closeSettingsModal() { 
-    document.getElementById('settingsModal')?.classList.add('hidden'); 
-}
-
-async function saveSettings() {
-    currentLang = selectedModalLang;
-    currentCurrency = selectedModalCurrency;
-    applyTheme(selectedModalTheme);
-    document.getElementById('settingsModal')?.classList.add('hidden');
-    render();
-    initTaglineCarousel();
-
-    if (currentTab) {
-        const res = await callBackend('updateSettings', { language: currentLang, currency: currentCurrency, theme: currentTheme });
-        if (res && res.status !== "success") {
-            console.warn("[SPENSE Warning] Backend settings save notice:", res?.message);
-        }
-    }
-}
-
-// --- GUARANTEED 4-DIRECTIONAL KEYFRAME TAGLINE ENGINE ---
-let taglineTimer = null;
-let currentTaglineIndex = 0;
-
-function initTaglineCarousel() {
-    const spot = document.getElementById('taglineSpot');
-    if (!spot) return;
-    if (taglineTimer) clearInterval(taglineTimer);
-
-    const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
-
-    function cycleTagline() {
-        const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
-        const activeTaglines = t.taglines;
-        spot.className = "w-full text-center leading-snug";
-        void spot.offsetWidth; 
-        spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
-        const randomMotion = motionClasses[Math.floor(Math.random() * motionClasses.length)];
-        spot.className = "w-full text-center leading-snug " + randomMotion;
-        currentTaglineIndex++;
-    }
-
-    cycleTagline();
-    taglineTimer = setInterval(cycleTagline, 3200);
-}
-
-// --- REAL-TIME LIVE-PREVIEW DRAG AND DROP ENGINE ---
-function initCardDragging() {
-    const container = document.getElementById('appContainer');
-    if (!container) return;
-    const handles = container.querySelectorAll('.card-drag-handle');
-
-    handles.forEach(handle => {
-        const card = handle.closest('.theme-card');
-        if (!card) return;
-
-        handle.addEventListener('dragstart', (e) => {
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', card.getAttribute('data-card-id'));
-            card.classList.add('opacity-40', 'scale-95');
-            window._draggedCard = card;
-        });
-
-        handle.addEventListener('dragend', () => {
-            card.classList.remove('opacity-40', 'scale-95');
-            container.querySelectorAll('.theme-card').forEach(c => {
-                c.classList.remove('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
-            });
-            window._draggedCard = null;
-        });
-
-        card.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        });
-
-        card.addEventListener('dragenter', (e) => {
-            e.preventDefault();
-            if (window._draggedCard && window._draggedCard !== card) {
-                card.classList.add('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
-                
-                const allCards = Array.from(container.querySelectorAll('.theme-card'));
-                const draggedIndex = allCards.indexOf(window._draggedCard);
-                const targetIndex = allCards.indexOf(card);
-
-                if (draggedIndex < targetIndex) {
-                    container.insertBefore(window._draggedCard, card.nextSibling);
-                } else {
-                    container.insertBefore(window._draggedCard, card);
-                }
-            }
-        });
-
-        card.addEventListener('dragleave', () => {
-            card.classList.remove('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
-        });
-
-        card.addEventListener('drop', (e) => {
-            e.preventDefault();
-            card.classList.remove('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
-            document.getElementById('layoutActionBar')?.classList.remove('hidden');
-        });
-    });
-}
-
-function getCurrentCardOrder() {
-    const container = document.getElementById('appContainer');
-    if (!container) return [];
-    return Array.from(container.querySelectorAll('.theme-card'))
-        .map(card => card.getAttribute('data-card-id'))
-        .filter(Boolean);
-}
-
-function applyCardOrder(orderArray) {
-    if (!Array.isArray(orderArray) || orderArray.length === 0) return;
-    const container = document.getElementById('appContainer');
-    if (!container) return;
-
-    orderArray.forEach(id => {
-        const card = container.querySelector(`[data-card-id="${id}"]`);
-        if (card) container.appendChild(card);
-    });
-}
-
-async function saveCardLayout() {
-    if (!currentTab) return;
-    const newOrder = getCurrentCardOrder();
-    const res = await callBackend('updateSettings', { cardOrder: newOrder });
-    if (res && res.status === "success") {
-        document.getElementById('layoutActionBar')?.classList.add('hidden');
-        alert("Layout saved successfully to Google Sheet!");
-    } else {
-        alert("Failed to save layout: " + (res?.message || "Unknown error"));
-    }
 }
 
 // --- GOOGLE SHEETS CONNECTOR ---
@@ -396,6 +203,7 @@ async function loadGoogleSheetsArchive() {
     }
 }
 
+// --- WELCOME MODAL CORE NAVIGATION ---
 function switchModalTab(tabMode) {
     const createSec = document.getElementById('createSection');
     const recallSec = document.getElementById('recallSection');
@@ -408,17 +216,14 @@ function switchModalTab(tabMode) {
         createSec.classList.remove('hidden');
         recallSec.classList.add('hidden');
         if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-xl cursor-pointer";
-        if (tabRecallBtn) tabRecallBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer";
+        if (tabRecallBtn) tabRecallBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-slate-100 text-slate-500 rounded-xl cursor-pointer";
     } else {
         createSec.classList.add('hidden');
         recallSec.classList.remove('hidden');
         if (tabRecallBtn) tabRecallBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-xl cursor-pointer";
-        if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer";
+        if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-slate-100 text-slate-500 rounded-xl cursor-pointer";
         
-        const select = document.getElementById('archiveSelect');
-        if (select && (select.options.length <= 1 || select.value === "")) {
-            loadGoogleSheetsArchive();
-        }
+        loadGoogleSheetsArchive();
     }
 }
 
@@ -527,7 +332,6 @@ async function deleteActiveLedger() {
     goHome();
 }
 
-// --- AUTO-PERSIST PARTICIPANT ENGINE (NO SAVE BUTTON REQUIRED) ---
 async function stageMember() {
     const input = document.getElementById('memberName');
     if (!input) return;
@@ -542,13 +346,10 @@ async function stageMember() {
     input.value = '';
     render();
 
-    // Persist immediately in background, updating pill styling upon success
     const res = await callBackend('addMembers', { names: [name] });
     if (res && res.status === "success") {
         unsavedMembers = unsavedMembers.filter(m => m !== name);
         render();
-    } else {
-        console.warn("[SPENSE Warning] Background sync pending for participant:", name);
     }
 }
 
@@ -563,19 +364,14 @@ async function deleteMember(name, event) {
     unsavedMembers = unsavedMembers.filter(m => m.toLowerCase() !== targetLower);
     render();
 
-    const res = await callBackend('removeMember', { name: canonicalName });
-    if (res && res.status !== "success") {
-        console.warn("[SPENSE Notice] Backend deletion notice:", res?.message);
-    }
+    await callBackend('removeMember', { name: canonicalName });
 }
 
-// --- COMPLETE EXPENSE EDITING & GENERIC SELECTION FIX ---
 function startEditExpense(id) {
     const exp = ledgerData.expenses.find(e => e.id.toString() === id.toString());
     if (!exp) return;
 
     editingExpenseId = id.toString();
-
     renderDropdowns();
     renderSplitCheckboxes();
 
@@ -591,11 +387,8 @@ function startEditExpense(id) {
     if (catInput) catInput.value = exp.category || 'Food & Drink';
 
     if (paidByInput) {
-        const canonicalPayer = findMemberCanonical(exp.paidBy);
-        paidByInput.value = canonicalPayer;
-        if (!paidByInput.value && paidByInput.options.length > 0) {
-            paidByInput.selectedIndex = 0;
-        }
+        paidByInput.value = findMemberCanonical(exp.paidBy);
+        if (!paidByInput.value && paidByInput.options.length > 0) paidByInput.selectedIndex = 0;
     }
 
     const splitArr = (Array.isArray(exp.splitWith) ? exp.splitWith : (exp.splitBetween || [])).map(s => s.toLowerCase());
@@ -622,7 +415,6 @@ function resetExpenseForm() {
     const dateInput = document.getElementById('expenseDate');
     if (dateInput) dateInput.value = formatToISODate(new Date());
 
-    // CRITICAL REQUIREMENT: When entering a new expense, all participants are selected as generic (checked)
     document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = true);
 }
 
@@ -981,7 +773,123 @@ function escapeHTML(str) {
     return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
 }
 
-// --- GLOBAL WINDOW BINDINGS ---
+// --- CARD REORDERING DRAG ENGINE ---
+function initCardDragging() {
+    const container = document.getElementById('appContainer');
+    if (!container) return;
+    const handles = container.querySelectorAll('.card-drag-handle');
+
+    handles.forEach(handle => {
+        const card = handle.closest('.theme-card');
+        if (!card) return;
+
+        handle.addEventListener('dragstart', (e) => {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', card.getAttribute('data-card-id'));
+            card.classList.add('opacity-40', 'scale-95');
+            window._draggedCard = card;
+        });
+
+        handle.addEventListener('dragend', () => {
+            card.classList.remove('opacity-40', 'scale-95');
+            container.querySelectorAll('.theme-card').forEach(c => {
+                c.classList.remove('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
+            });
+            window._draggedCard = null;
+        });
+
+        card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        });
+
+        card.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            if (window._draggedCard && window._draggedCard !== card) {
+                card.classList.add('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
+                
+                const allCards = Array.from(container.querySelectorAll('.theme-card'));
+                const draggedIndex = allCards.indexOf(window._draggedCard);
+                const targetIndex = allCards.indexOf(card);
+
+                if (draggedIndex < targetIndex) {
+                    container.insertBefore(window._draggedCard, card.nextSibling);
+                } else {
+                    container.insertBefore(window._draggedCard, card);
+                }
+            }
+        });
+
+        card.addEventListener('dragleave', () => {
+            card.classList.remove('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
+        });
+
+        card.addEventListener('drop', (e) => {
+            e.preventDefault();
+            card.classList.remove('border-amber-400', 'border-4', 'border-dashed', 'scale-[1.01]');
+            document.getElementById('layoutActionBar')?.classList.remove('hidden');
+        });
+    });
+}
+
+function getCurrentCardOrder() {
+    const container = document.getElementById('appContainer');
+    if (!container) return [];
+    return Array.from(container.querySelectorAll('.theme-card'))
+        .map(card => card.getAttribute('data-card-id'))
+        .filter(Boolean);
+}
+
+function applyCardOrder(orderArray) {
+    if (!Array.isArray(orderArray) || orderArray.length === 0) return;
+    const container = document.getElementById('appContainer');
+    if (!container) return;
+
+    orderArray.forEach(id => {
+        const card = container.querySelector(`[data-card-id="${id}"]`);
+        if (card) container.appendChild(card);
+    });
+}
+
+async function saveCardLayout() {
+    if (!currentTab) return;
+    const newOrder = getCurrentCardOrder();
+    const res = await callBackend('updateSettings', { cardOrder: newOrder });
+    if (res && res.status === "success") {
+        document.getElementById('layoutActionBar')?.classList.add('hidden');
+        alert("Layout saved successfully to Google Sheet!");
+    } else {
+        alert("Failed to save layout: " + (res?.message || "Unknown error"));
+    }
+}
+
+// --- GUARANTEED 4-DIRECTIONAL KEYFRAME TAGLINE ENGINE ---
+let taglineTimer = null;
+let currentTaglineIndex = 0;
+
+function initTaglineCarousel() {
+    const spot = document.getElementById('taglineSpot');
+    if (!spot) return;
+    if (taglineTimer) clearInterval(taglineTimer);
+
+    const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
+
+    function cycleTagline() {
+        const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+        const activeTaglines = t.taglines;
+        spot.className = "w-full text-center leading-snug";
+        void spot.offsetWidth; 
+        spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
+        const randomMotion = motionClasses[Math.floor(Math.random() * motionClasses.length)];
+        spot.className = "w-full text-center leading-snug " + randomMotion;
+        currentTaglineIndex++;
+    }
+
+    cycleTagline();
+    taglineTimer = setInterval(cycleTagline, 3200);
+}
+
+// --- EXPLICIT WINDOW BINDINGS FOR BUTTON HANDLERS ---
 window.switchModalTab = switchModalTab;
 window.createNewLedger = createNewLedger;
 window.recallLedger = recallLedger;
