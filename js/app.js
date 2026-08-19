@@ -4,14 +4,16 @@
  * ==========================================================================
  */
 
-console.log("%c[SPENSE] Controller Engine Loaded.", "color: #059669; font-weight: bold;");
+console.log("%c[SPENSE] Engine & Controller Loaded Successfully.", "color: #059669; font-weight: bold;");
 
+// Global Application State
 let currentTab = null;
 let currentPin = null;
 let currentCurrency = 'USD';
 let currentTheme = 'Silk';
 let ledgerData = { members: [], expenses: [] };
 
+// Settings Modal Staging State
 let selectedModalLang = 'en';
 let selectedModalCurrency = 'USD';
 let selectedModalTheme = 'Silk';
@@ -54,7 +56,7 @@ function findMemberCanonical(targetName) {
     return match || targetName;
 }
 
-// --- FIX 1: ACTIVE DRAG AND DROP DOM SWAPPING ENGINE ---
+// Drag & Drop DOM Element Swapping
 function initCardDragging() {
     const container = document.getElementById('appContainer');
     if (!container) return;
@@ -548,6 +550,41 @@ function selectAllSplits() {
     document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = true);
 }
 
+// Dynamic Multilingual Tagline Carousel Engine
+let taglineTimer = null;
+let currentTaglineIndex = 0;
+
+function initTaglineCarousel() {
+    const spot = document.getElementById('taglineSpot');
+    if (!spot) return;
+
+    if (taglineTimer) clearInterval(taglineTimer);
+
+    const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
+
+    function cycleTagline() {
+        const dict = (typeof TRANSLATIONS !== 'undefined' && TRANSLATIONS[currentLang]) 
+            ? TRANSLATIONS[currentLang] 
+            : { taglines: ["Spend simply. Settle easily."] };
+
+        const activeTaglines = dict.taglines || [];
+        if (activeTaglines.length === 0) return;
+
+        spot.className = "w-full text-center leading-snug";
+        void spot.offsetWidth; // Force DOM reflow to reset keyframe animation state
+
+        spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
+
+        const randomMotion = motionClasses[Math.floor(Math.random() * motionClasses.length)];
+        spot.className = "w-full text-center leading-snug " + randomMotion;
+
+        currentTaglineIndex++;
+    }
+
+    cycleTagline();
+    taglineTimer = setInterval(cycleTagline, 3200);
+}
+
 function render() {
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
 
@@ -622,7 +659,6 @@ function renderExpenseFormHeader() {
     }
 }
 
-// --- FIX 2: DYNAMIC MULTILINGUAL CATEGORY DROPDOWN RENDERER ---
 function renderDropdowns() {
     const catSelect = document.getElementById('expenseCategory');
     const paidSelect = document.getElementById('expensePaidBy');
@@ -658,7 +694,6 @@ function renderSplitCheckboxes() {
         : '<span class="opacity-60 italic">Add participants first.</span>';
 }
 
-// --- FIX 3: INTERNATIONALIZED EDIT BUTTON RENDERER ---
 function renderHistory() {
     const list = document.getElementById('expenseHistory');
     if (!list) return;
@@ -698,27 +733,6 @@ function renderSettlement() {
 function escapeHTML(str) {
     if (!str) return '';
     return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-}
-
-let taglineTimer = null;
-let currentTaglineIndex = 0;
-
-function initTaglineCarousel() {
-    const spot = document.getElementById('taglineSpot');
-    if (!spot) return;
-    if (taglineTimer) clearInterval(taglineTimer);
-    const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
-
-    function cycleTagline() {
-        const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
-        spot.className = "w-full text-center leading-snug";
-        void spot.offsetWidth;
-        spot.innerHTML = t.taglines[currentTaglineIndex % t.taglines.length];
-        spot.className = "w-full text-center leading-snug " + motionClasses[Math.floor(Math.random() * motionClasses.length)];
-        currentTaglineIndex++;
-    }
-    cycleTagline();
-    taglineTimer = setInterval(cycleTagline, 3200);
 }
 
 // Global Window Bindings
