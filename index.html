@@ -13,29 +13,26 @@
         <!-- Save Layout Notification Bar -->
         <div id="layoutActionBar" class="hidden bg-amber-400 border-2 border-slate-900 text-slate-900 px-4 py-2.5 rounded-2xl font-black text-xs flex justify-between items-center shadow-[3px_3px_0px_#0f172a] animate-bounce">
             <span>Layout modified! Save your new card arrangement to Google Sheets.</span>
-            <button id="btnSaveCardLayout" type="button" onclick="window.saveCardLayout()" class="bg-slate-900 text-amber-300 px-3 py-1 rounded-xl uppercase tracking-wider text-[10px] cursor-pointer hover:bg-slate-800">Save Layout</button>
+            <button id="btnSaveCardLayout" type="button" onclick="saveCardLayout()" class="bg-slate-900 text-amber-300 px-3 py-1 rounded-xl uppercase tracking-wider text-[10px] cursor-pointer hover:bg-slate-800">Save Layout</button>
         </div>
 
         <div id="appContainer" class="space-y-6">
-            <!-- Header (Horizontal Order: Logo | Middle Section x2 Font Size | Buttons) -->
+            <!-- Header -->
             <header class="theme-card theme-header p-4 sm:p-6" data-card-id="header">
                 <div class="card-drag-handle" draggable="true" title="Drag to reorder card">⠿</div>
                 <div class="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap pointer-events-auto pr-8">
                     
-                    <!-- 1. Logo -->
                     <div class="flex items-center cursor-pointer group flex-shrink-0" onclick="goHome()" title="Home">
                         <div class="relative w-72 h-32 sm:w-96 sm:h-40 flex items-center justify-center group-hover:scale-105 transition-transform">
                             <img src="logo.png" alt="Brand Logo" class="w-full h-full object-contain drop-shadow-md">
                         </div>
                     </div>
 
-                    <!-- 2. Middle Section -->
                     <div id="viewModeIndicator" class="flex flex-col text-left sm:text-center flex-grow min-w-[200px]">
                         <span class="text-sm sm:text-base font-medium uppercase tracking-wider opacity-70">Active ledger:</span>
                         <span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5">AWAITING AUTHENTICATION...</span>
                     </div>
 
-                    <!-- 3. Buttons -->
                     <div class="flex flex-col gap-2 flex-shrink-0">
                         <button id="settingsBtn" type="button" onclick="openSettingsModal()" data-i18n="settingsBtn" class="hidden theme-btn text-xs px-3 py-1.5 font-bold cursor-pointer text-center">⚙ Settings</button>
                         <button id="shareBtn" type="button" onclick="openShareModal()" data-i18n="shareLinkBtn" class="hidden theme-btn action-btn text-xs px-3 py-1.5 font-bold cursor-pointer text-center">Share Link</button>
@@ -45,7 +42,7 @@
                 </div>
             </header>
 
-            <!-- Full-Width Participants Section (Save button removed, automatic background sync with color shift) -->
+            <!-- Participants Section -->
             <section class="theme-card theme-frame-2 p-6 flex flex-col justify-between space-y-4" data-card-id="participants">
                 <div class="card-drag-handle" draggable="true" title="Drag to reorder card">⠿</div>
                 <div class="pr-8">
@@ -135,18 +132,21 @@
     <div id="welcomeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="theme-card p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl bg-white text-slate-900">
             <div class="border-b border-slate-200 pb-5 text-center space-y-3">
+                
                 <div class="w-full max-w-[400px] mx-auto py-2">
                     <img src="logo.png" alt="Brand Logo" class="w-full h-auto object-contain drop-shadow-md">
                 </div>
+
                 <div class="py-2 min-h-[50px] flex items-center justify-center">
                     <div id="taglineSpot" class="w-full text-slate-900 text-xs sm:text-sm font-medium transition-opacity duration-300 text-center"></div>
                 </div>
+
                 <div class="text-xs font-black tracking-widest text-slate-800 flex justify-center items-center gap-2 pt-2 uppercase">
-                    <button id="lang-tr" type="button" onclick="switchLanguage('tr')" class="hover:text-amber-600 cursor-pointer transition">TÜRKÇE</button>
+                    <button type="button" onclick="switchLanguage('tr')" class="hover:text-amber-600 cursor-pointer transition">TÜRKÇE</button>
                     <span class="text-slate-300 font-normal">|</span>
-                    <button id="lang-en" type="button" onclick="switchLanguage('en')" class="hover:text-amber-600 cursor-pointer transition">ENGLISH</button>
+                    <button type="button" onclick="switchLanguage('en')" class="hover:text-amber-600 cursor-pointer transition">ENGLISH</button>
                     <span class="text-slate-300 font-normal">|</span>
-                    <button id="lang-de" type="button" onclick="switchLanguage('de')" class="hover:text-amber-600 cursor-pointer transition">DEUTSCH</button>
+                    <button type="button" onclick="switchLanguage('de')" class="hover:text-amber-600 cursor-pointer transition">DEUTSCH</button>
                 </div>
                 <p data-i18n="modalSub" class="text-xs font-bold text-slate-600 pt-1">Create or open a confidential group ledger.</p>
             </div>
@@ -156,6 +156,7 @@
                 <button id="tabRecallBtn" type="button" onclick="switchModalTab('recall')" data-i18n="tabRecall" class="flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-slate-100 text-slate-500 rounded-xl cursor-pointer">Recall Existing</button>
             </div>
 
+            <!-- Create Form -->
             <div id="createSection" class="space-y-4">
                 <div class="space-y-1">
                     <label data-i18n="ledgerNameLabel" class="text-xs font-extrabold text-slate-800">Ledger Name</label>
@@ -168,14 +169,11 @@
                 <button type="button" onclick="createNewLedger()" data-i18n="initializeBtn" class="w-full theme-btn bg-lime-400 hover:bg-lime-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Initialize Ledger</button>
             </div>
 
+            <!-- Recall Form -->
             <div id="recallSection" class="space-y-4 hidden">
                 <div id="archiveDropdownContainer" class="space-y-1">
                     <label data-i18n="selectArchiveLabel" class="text-xs font-extrabold text-slate-800">Select Archive</label>
                     <select id="archiveSelect" class="w-full theme-input px-3 py-2 text-sm cursor-pointer"></select>
-                </div>
-                <div id="directTabDisplay" class="hidden space-y-1">
-                    <label data-i18n="accessingSharedLabel" class="text-xs font-extrabold text-slate-800">Accessing Shared Ledger</label>
-                    <input type="text" id="directTabName" readonly class="w-full theme-input bg-amber-100 px-3 py-2 text-sm font-bold text-slate-900">
                 </div>
                 <div class="space-y-1">
                     <label data-i18n="enterPinLabel" class="text-xs font-extrabold text-slate-800">Enter 4-Digit PIN</label>
@@ -218,17 +216,14 @@
                     <label class="cursor-pointer border border-slate-300 bg-slate-50 p-2 rounded-xl text-center shadow-xs has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
                         <input type="radio" name="modalThemeSelect" value="Silk" onchange="applyTheme('Silk')" class="sr-only">
                         <span class="block text-xs font-black font-sans">Silk</span>
-                        <span class="text-[9px] block text-slate-500 font-sans">Minimal</span>
                     </label>
                     <label class="cursor-pointer border-2 border-slate-900 bg-amber-100 p-2 rounded-xl text-center shadow-[2px_2px_0px_#0f172a] has-[:checked]:ring-2 has-[:checked]:ring-amber-500">
                         <input type="radio" name="modalThemeSelect" value="Toon" onchange="applyTheme('Toon')" class="sr-only">
                         <span class="block text-xs font-black font-serif">Toon</span>
-                        <span class="text-[9px] block text-slate-600 font-sans">Cartoon</span>
                     </label>
                     <label class="cursor-pointer border border-cyan-500 bg-slate-950 p-2 rounded-xl text-center text-cyan-400 shadow-xs has-[:checked]:ring-2 has-[:checked]:ring-cyan-400">
                         <input type="radio" name="modalThemeSelect" value="Neon" onchange="applyTheme('Neon')" class="sr-only">
                         <span class="block text-xs font-black font-mono">Neon</span>
-                        <span class="text-[9px] block text-cyan-300 font-mono">Cyber</span>
                     </label>
                 </div>
             </div>
@@ -252,18 +247,7 @@
         </div>
     </div>
 
-    <!-- Processing Modal -->
-    <div id="recordingModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="theme-card bg-white p-6 space-y-4 w-64 text-center text-slate-900">
-            <p data-i18n="processingMsg" class="text-xs font-black uppercase tracking-widest theme-font-head">Processing...</p>
-            <div class="h-3 bg-slate-200 border border-slate-400 overflow-hidden relative rounded-full">
-                <div class="scanner-bar"></div>
-            </div>
-        </div>
-    </div>
-
     <!-- Scripts -->
-    <script src="js/i18n.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
