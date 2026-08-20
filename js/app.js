@@ -2,7 +2,7 @@
  * ==========================================================================
  * SPENSE - Group Expense Tracker Main Controller
  * CS Senior Architecture: Modular State Machine + Tagline Engine Restoration 
- *                        + Pristine Backend Routing Compatibility
+ *                        + Unified Multilingual i18n Engine
  * ==========================================================================
  */
 
@@ -25,8 +25,8 @@ let selectedModalTheme = 'Silk';
 let unsavedMembers = [];
 let editingExpenseId = null;
 
-// --- Internationalization Dictionary ---
-const TRANSLATIONS = {
+// --- Centralized Internationalization (i18n) Dictionary ---
+var TRANSLATIONS = {
     en: {
         settingsBtn: "⚙ Settings", shareLinkBtn: "Share Link", deleteBtn: "Delete",
         participantsTitle: "Participants", participantsSub: "Add or remove people from this group.",
@@ -40,8 +40,11 @@ const TRANSLATIONS = {
         historyTitle: "Ledger History", clickToEditSub: "(Click item to edit)", generateReportBtn: "Generate Report",
         modalSub: "Create or open a confidential group ledger.", tabCreate: "Create New", tabRecall: "Recall Existing",
         ledgerNameLabel: "Ledger Name", ledgerNamePh: "e.g. dinner-club", setPinLabel: "Set 4-Digit PIN", initializeBtn: "Initialize Ledger",
-        selectArchiveLabel: "Select Archive", enterPinLabel: "Enter 4-Digit PIN", accessLedgerBtn: "Access Ledger",
-        shareLinkHeader: "Share Ledger Link", shareLinkSub: "Anyone with this link will only need to enter PIN.", copyBtn: "Copy",
+        selectArchiveLabel: "Select Archive", accessingSharedLabel: "Accessing Shared Ledger", enterPinLabel: "Enter 4-Digit PIN", accessLedgerBtn: "Access Ledger",
+        shareLinkHeader: "Share Ledger Link", shareLinkSub: "Anyone with this link will only need to enter PIN.", copyBtn: "Copy", processingMsg: "Processing...",
+        reportTitle: "SPENSE LEDGER REPORT", reportNameLabel: "Ledger Name", reportGeneratedOn: "Generated On", reportParticipants: "Participants",
+        reportTotalSpend: "Total Spend", reportSettlementMatrix: "SETTLEMENT MATRIX", reportAllSettled: "All balances are currently settled!",
+        reportHistoryTitle: "ITEMIZED TRANSACTION HISTORY", reportNoExpenses: "No expenses recorded.", reportPaidBy: "Paid By", reportSplitWith: "Split With",
         taglines: [
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Spend simply.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Enjoy the moment. Leave tracking to SPENSE.</span>`,
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Just add what you spent.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Who paid? Who shares? SPENSE does the math.</span>`,
@@ -61,8 +64,11 @@ const TRANSLATIONS = {
         historyTitle: "Geçmiş Kayıtlar", clickToEditSub: "(Düzenlemek için tıkla)", generateReportBtn: "Rapor Oluştur",
         modalSub: "Gizli bir grup defteri oluşturun veya açın.", tabCreate: "Yeni Oluştur", tabRecall: "Var Olanı Aç",
         ledgerNameLabel: "Defter Adı", ledgerNamePh: "ör. aksam-yemegi", setPinLabel: "4 Haneli PIN Belirleyin", initializeBtn: "Defteri Başlat",
-        selectArchiveLabel: "Arşiv Seç", enterPinLabel: "4 Haneli PIN Girin", accessLedgerBtn: "Deftere Eriş",
-        shareLinkHeader: "Defter Bağlantısını Paylaş", shareLinkSub: "Bu bağlantıya sahip herkes PIN girmelidir.", copyBtn: "Kopyala",
+        selectArchiveLabel: "Arşiv Seç", accessingSharedLabel: "Paylaşılan Deftere Erişiliyor", enterPinLabel: "4 Haneli PIN Girin", accessLedgerBtn: "Deftere Eriş",
+        shareLinkHeader: "Defter Bağlantısını Paylaş", shareLinkSub: "Bu bağlantıya sahip herkes PIN girmelidir.", copyBtn: "Kopyala", processingMsg: "İşleniyor...",
+        reportTitle: "SPENSE DEFTER RAPORU", reportNameLabel: "Defter Adı", reportGeneratedOn: "Oluşturulma Tarihi", reportParticipants: "Katılımcılar",
+        reportTotalSpend: "Toplam Harcama", reportSettlementMatrix: "ÖDEME MATRİSİ", reportAllSettled: "Tüm borçlar kapatılmıştır!",
+        reportHistoryTitle: "DETAYLI İŞLEM GEÇMİŞİ", reportNoExpenses: "Henüz harcama kaydedilmedi.", reportPaidBy: "Ödeyen", reportSplitWith: "Paylaşanlar",
         taglines: [
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Kolayca harca.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Anın tadını çıkar. Takibi SPENSE'e bırak.</span>`,
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Sadece harcamanı ekle.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kim ödedi? Kimler paylaşıyor? Matematik işini SPENSE yapar.</span>`,
@@ -82,8 +88,11 @@ const TRANSLATIONS = {
         historyTitle: "Verlauf", clickToEditSub: "(Zum Bearbeiten anklicken)", generateReportBtn: "Bericht Erstellen",
         modalSub: "Gruppenbuch öffnen.", tabCreate: "Neu", tabRecall: "Öffnen",
         ledgerNameLabel: "Name", ledgerNamePh: "z.B. club", setPinLabel: "PIN", initializeBtn: "Starten",
-        selectArchiveLabel: "Archiv Wählen", enterPinLabel: "PIN Eingeben", accessLedgerBtn: "Zugreifen",
-        shareLinkHeader: "Teilen", shareLinkSub: "PIN erforderlich.", copyBtn: "Kopieren",
+        selectArchiveLabel: "Archiv Wählen", accessingSharedLabel: "Zugriff auf geteiltes Buch", enterPinLabel: "PIN Eingeben", accessLedgerBtn: "Zugreifen",
+        shareLinkHeader: "Teilen", shareLinkSub: "PIN erforderlich.", copyBtn: "Kopieren", processingMsg: "Verarbeitung...",
+        reportTitle: "SPENSE BERICHT", reportNameLabel: "Name des Buches", reportGeneratedOn: "Erstellt am", reportParticipants: "Teilnehmer",
+        reportTotalSpend: "Gesamtausgaben", reportSettlementMatrix: "ABRECHNUNGSMATRIX", reportAllSettled: "Alle Salden sind ausgeglichen!",
+        reportHistoryTitle: "TRANSAKTIONSVERLAUF", reportNoExpenses: "Keine Ausgaben erfasst.", reportPaidBy: "Bezahlt von", reportSplitWith: "Aufgeteilt mit",
         taglines: [
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach ausgeben.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Genieße den Moment. Überlasse die Nachverfolgung SPENSE.</span>`,
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach eintragen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Wer hat bezahlt? Wer teilt es? SPENSE macht die Rechnung.</span>`,
@@ -91,6 +100,11 @@ const TRANSLATIONS = {
         ]
     }
 };
+
+// Safe helper to obtain active language dictionary
+function getTranslationDictionary() {
+    return TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+}
 
 // --- DETERMINISTIC DATE NORMALIZATION HELPER ---
 function formatToISODate(rawDate) {
@@ -245,7 +259,7 @@ function initTaglineCarousel() {
     const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
 
     function cycleTagline() {
-        const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+        const t = getTranslationDictionary();
         const activeTaglines = t.taglines;
 
         spot.className = "w-full text-center leading-snug";
@@ -311,7 +325,7 @@ function initCardDragging() {
                 parent.replaceChild(dragged, card);
                 parent.replaceChild(card, tempNode);
 
-                document.getElementById('layoutActionBar')?.classList.remove('hidden');
+                saveCardLayout();
             }
         });
     });
@@ -340,11 +354,8 @@ async function saveCardLayout() {
     if (!currentTab) return;
     const newOrder = getCurrentCardOrder();
     const res = await callBackend('updateSettings', { cardOrder: newOrder });
-    if (res && res.status === "success") {
-        document.getElementById('layoutActionBar')?.classList.add('hidden');
-        alert("Layout saved successfully!");
-    } else {
-        alert("Failed to save layout: " + (res?.message || "Unknown error"));
+    if (res && res.status !== "success") {
+        console.warn("[SPENSE Warning] Failed to silently save card layout:", res?.message);
     }
 }
 
@@ -571,7 +582,7 @@ async function deleteActiveLedger() {
     goHome();
 }
 
-// --- PARTICIPANTS STAGING & AUTO-PERSIST MODULE ---
+// --- PARTICIPANTS AUTO-PERSIST MODULE ---
 async function addMemberDirect() {
     const input = document.getElementById('memberName');
     if (!input) return;
@@ -590,33 +601,12 @@ async function addMemberDirect() {
     }
 
     ledgerData.members.push(name);
-    if (!unsavedMembers.includes(name)) unsavedMembers.push(name);
     input.value = '';
     render();
 
     const res = await callBackend('addMembers', { names: [name] });
-    if (res && res.status === "success") {
-        unsavedMembers = unsavedMembers.filter(m => m !== name);
-        render();
-    } else {
+    if (res && res.status !== "success") {
         console.warn("[SPENSE Warning] Background sync failed for participant:", name);
-    }
-}
-
-async function saveMembers() {
-    if (unsavedMembers.length === 0) return;
-
-    const btn = document.getElementById('btnSaveMembers');
-    if (btn) btn.innerText = "Saving...";
-
-    const res = await callBackend('addMembers', { names: unsavedMembers });
-    if (res && res.status === "success") {
-        unsavedMembers = [];
-        render();
-        alert("Participants saved to sheet!");
-    } else {
-        alert("Failed to save participants: " + (res?.message || "Error"));
-        render();
     }
 }
 
@@ -635,8 +625,6 @@ async function deleteMember(name, event) {
     const targetLower = canonicalName.toLowerCase();
     
     ledgerData.members = ledgerData.members.filter(m => m.toLowerCase() !== targetLower);
-    unsavedMembers = unsavedMembers.filter(m => m.toLowerCase() !== targetLower);
-
     render();
 
     const res = await callBackend('removeMember', { name: canonicalName });
@@ -652,10 +640,8 @@ function startEditExpense(id) {
 
     editingExpenseId = id.toString();
 
-    // 1. Re-render UI first to mount dropdown options
     render();
 
-    // 2. Fetch DOM input handles AFTER render cycle
     const dateInput = document.getElementById('expenseDate');
     const descInput = document.getElementById('expenseDesc');
     const amountInput = document.getElementById('expenseAmount');
@@ -667,7 +653,6 @@ function startEditExpense(id) {
     if (amountInput) amountInput.value = exp.amount || '';
     if (catInput) catInput.value = exp.category || 'Food & Drink';
 
-    // 3. Case-Insensitive Select Option Alignment Strategy
     if (paidByInput && exp.paidBy) {
         const targetPayer = findMemberCanonical(exp.paidBy).toLowerCase();
         let matchedIndex = -1;
@@ -686,7 +671,6 @@ function startEditExpense(id) {
         }
     }
 
-    // 4. Update Split Checkboxes
     const splitArr = (Array.isArray(exp.splitWith) ? exp.splitWith : (exp.splitBetween || [])).map(s => s.toLowerCase());
     document.querySelectorAll('.split-checkbox').forEach(cb => {
         cb.checked = splitArr.includes(cb.value.toLowerCase());
@@ -871,7 +855,7 @@ function copySettlementSummary() {
     });
 }
 
-// --- REPORT GENERATOR ENGINE ---
+// --- FULLY MULTILINGUAL REPORT GENERATOR ENGINE ---
 function generateLedgerReport() {
     if (!currentTab) {
         alert("Please create or recall a ledger first to generate a report.");
@@ -883,6 +867,7 @@ function generateLedgerReport() {
         return;
     }
 
+    const t = getTranslationDictionary();
     const sym = getCurrencySymbol();
     let totalSpent = 0;
     ledgerData.expenses.forEach(e => totalSpent += (parseFloat(e.amount) || 0));
@@ -890,33 +875,33 @@ function generateLedgerReport() {
     const settlement = calculateSettlement();
 
     let report = `====================================================\n`;
-    report += `               SPENSE LEDGER REPORT                 \n`;
+    report += `               ${t.reportTitle || 'SPENSE LEDGER REPORT'}                 \n`;
     report += `====================================================\n`;
-    report += `Ledger Name  : ${currentTab}\n`;
-    report += `Generated On : ${new Date().toLocaleString()}\n`;
-    report += `Participants : ${ledgerData.members.join(', ') || 'None'}\n`;
-    report += `Total Spend  : ${sym}${totalSpent.toFixed(2)}\n`;
+    report += `${t.reportNameLabel || 'Ledger Name'}  : ${currentTab}\n`;
+    report += `${t.reportGeneratedOn || 'Generated On'} : ${new Date().toLocaleString()}\n`;
+    report += `${t.reportParticipants || 'Participants'} : ${ledgerData.members.join(', ') || 'None'}\n`;
+    report += `${t.reportTotalSpend || 'Total Spend'}  : ${sym}${totalSpent.toFixed(2)}\n`;
     report += `====================================================\n\n`;
 
-    report += `--- SETTLEMENT MATRIX ---\n`;
+    report += `--- ${t.reportSettlementMatrix || 'SETTLEMENT MATRIX'} ---\n`;
     if (settlement.length > 0) {
         settlement.forEach(s => report += `• ${s}\n`);
     } else {
-        report += `All balances are currently settled!\n`;
+        report += `${t.reportAllSettled || 'All balances are currently settled!'}\n`;
     }
     report += `\n----------------------------------------------------\n\n`;
 
-    report += `--- ITEMIZED TRANSACTION HISTORY ---\n`;
+    report += `--- ${t.reportHistoryTitle || 'ITEMIZED TRANSACTION HISTORY'} ---\n`;
     if (ledgerData.expenses.length > 0) {
         ledgerData.expenses.forEach((e, idx) => {
             const splitArr = Array.isArray(e.splitWith) ? e.splitWith : (e.splitBetween || []);
             const splitStr = splitArr.map(s => findMemberCanonical(s)).join(', ');
             report += `${idx + 1}. [${formatToISODate(e.date)}] ${e.desc} (${e.category})\n`;
-            report += `   Amount: ${sym}${parseFloat(e.amount).toFixed(2)} | Paid By: ${findMemberCanonical(e.paidBy)}\n`;
-            report += `   Split With: ${splitStr}\n\n`;
+            report += `   ${t.amountLabel || 'Amount'}: ${sym}${parseFloat(e.amount).toFixed(2)} | ${t.reportPaidBy || 'Paid By'}: ${findMemberCanonical(e.paidBy)}\n`;
+            report += `   ${t.reportSplitWith || 'Split With'}: ${splitStr}\n\n`;
         });
     } else {
-        report += `No expenses recorded.\n`;
+        report += `${t.reportNoExpenses || 'No expenses recorded.'}\n`;
     }
     report += `====================================================\n`;
 
@@ -950,7 +935,7 @@ function selectAllSplits() {
 
 // --- MASTER UI RENDERING ENGINE ---
 function render() {
-    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    const t = getTranslationDictionary();
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const k = el.getAttribute('data-i18n');
@@ -973,7 +958,7 @@ function render() {
             `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>`;
     }
 
-    ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings', 'settingsBtn', 'shareBtn', 'deleteLedgerBtn'].forEach(id => {
+    ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings'].forEach(id => {
         document.getElementById(id)?.classList.toggle('hidden', !currentTab);
     });
 
@@ -987,34 +972,25 @@ function render() {
 
 function renderMembers() {
     const container = document.getElementById('memberList');
-    const saveBtn = document.getElementById('btnSaveMembers') || document.getElementById('saveMembersBtn');
     if (!container) return;
     
     container.innerHTML = ledgerData.members.length > 0 
         ? ledgerData.members.map(m => `
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl ${unsavedMembers.includes(m) ? 'bg-amber-200 text-amber-900 border border-amber-400' : 'bg-slate-200 text-slate-800'} font-bold">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-200 text-slate-800 font-bold">
                 ${escapeHTML(m)}
                 <button type="button" data-member="${escapeHTML(m)}" onclick="window.deleteMember(this.getAttribute('data-member'), event)" class="text-rose-600 hover:text-rose-800 font-black text-xs ml-1 cursor-pointer" title="Remove participant">×</button>
             </span>
         `).join('') 
         : '<span class="opacity-60 italic">No participants yet.</span>';
-
-    if (saveBtn) {
-        if (unsavedMembers.length > 0) {
-            saveBtn.classList.remove('hidden');
-        } else {
-            saveBtn.classList.add('hidden');
-        }
-    }
 }
 
 function renderExpenseFormHeader() {
     const titleEl = document.getElementById('expenseFormTitle');
     const subEl = document.getElementById('expenseFormSub');
-    const actionsContainer = document.getElementById('expenseFormActions') || document.getElementById('expenseFormButtons');
+    const actionsContainer = document.getElementById('expenseFormActions');
     if (!titleEl || !subEl || !actionsContainer) return;
 
-    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    const t = getTranslationDictionary();
 
     if (editingExpenseId) {
         titleEl.innerText = t.editExpenseTitle;
@@ -1123,9 +1099,6 @@ window.copyShareLink = copyShareLink;
 window.goHome = goHome;
 window.deleteActiveLedger = deleteActiveLedger;
 window.addMemberDirect = addMemberDirect;
-window.stageMember = addMemberDirect;
-window.saveMembers = saveMembers;
-window.saveStagedMembers = saveMembers;
 window.deleteMember = deleteMember;
 window.addExpense = addExpense;
 window.startEditExpense = startEditExpense;
@@ -1134,11 +1107,9 @@ window.updateExpense = updateExpense;
 window.deleteExpenseFromEdit = deleteExpenseFromEdit;
 window.copySettlementSummary = copySettlementSummary;
 window.generateLedgerReport = generateLedgerReport;
-window.generateReport = generateLedgerReport;
 window.switchLanguage = switchLanguage;
 window.saveCardLayout = saveCardLayout;
 window.selectAllSplits = selectAllSplits;
-window.toggleSelectAll = selectAllSplits;
 window.saveSettings = saveSettings;
 
 // --- INITIALIZE SYSTEM ENGINE ---
