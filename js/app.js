@@ -1,14 +1,12 @@
 /**
  * ==========================================================================
- * SPENSE - Group Expense Tracker Master Controller
- * CS Senior Architecture: Full Multi-Language Routing, Dynamic Tagline Engine
- *                        & Resilient Async State Management
+ * SPENSE - Master Web Controller
  * ==========================================================================
  */
 
-console.log("%c[SPENSE] Master Controller Engine Initialized.", "color: #059669; font-weight: bold;");
+console.log("%c[SPENSE] Master Controller Initialized.", "color: #059669; font-weight: bold;");
 
-// --- GLOBAL APPLICATION STATE ---
+// Global Application State
 let currentTab = null;
 let currentPin = null;
 let currentLang = 'en';
@@ -24,76 +22,16 @@ let selectedModalTheme = 'Silk';
 let unsavedMembers = [];
 let editingExpenseId = null;
 
-// --- MULTILINGUAL DICTIONARY REGISTRY ---
-const TRANSLATIONS = {
-    en: {
-        settingsBtn: "⚙ Settings", shareLinkBtn: "Share Link", deleteBtn: "Delete",
-        participantsTitle: "Participants", participantsSub: "Add or remove people from this group.",
-        namePlaceholder: "Name...", addBtn: "Add", saveMembersBtn: "Save Participants",
-        newExpenseTitle: "New Expense", editExpenseTitle: "Edit Expense",
-        newExpenseSub: "Log a transaction to split.", editExpenseSub: "Modify or delete this expense.",
-        dateLabel: "Date", categoryLabel: "Category", descLabel: "Description", descPlaceholder: "e.g. Dinner",
-        amountLabel: "Amount", paidByLabel: "Paid By", splitBetweenLabel: "Split Between:", selectAllBtn: "Select All", 
-        recordExpenseBtn: "Record Expense", updateExpenseBtn: "Update Expense", cancelEditBtn: "Cancel", deleteExpenseBtn: "Delete Expense",
-        settlementTitle: "Settlement Matrix", copySummaryBtn: "Copy Summary",
-        historyTitle: "Ledger History", generateReportBtn: "Generate Report",
-        modalSub: "Create or open a confidential group ledger.", tabCreate: "Create New", tabRecall: "Recall Existing",
-        ledgerNameLabel: "Ledger Name", ledgerNamePh: "e.g. dinner-club", setPinLabel: "Set 4-Digit PIN", initializeBtn: "Initialize Ledger",
-        selectArchiveLabel: "Select Archive", enterPinLabel: "Enter 4-Digit PIN", accessLedgerBtn: "Access Ledger",
-        shareLinkHeader: "Share Ledger Link", shareLinkSub: "Anyone with this link will only need to enter PIN.", copyBtn: "Copy",
-        taglines: [
-            `<strong class="block font-black text-slate-900 text-xl sm:text-2xl leading-tight">Spend simply.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Enjoy the moment. Leave tracking to SPENSE.</span>`,
-            `<strong class="block font-black text-slate-900 text-xl sm:text-2xl leading-tight">Just add what you spent.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Who paid? Who shares? SPENSE does the math.</span>`,
-            `<strong class="block font-black text-slate-900 text-xl sm:text-2xl leading-tight">Settle easily.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">See who owes whom — and how much.</span>`
-        ]
-    },
-    tr: {
-        settingsBtn: "⚙ Ayarlar", shareLinkBtn: "Bağlantıyı Paylaş", deleteBtn: "Sil",
-        participantsTitle: "Katılımcılar", participantsSub: "Bu gruba kişi ekleyin veya çıkarın.",
-        namePlaceholder: "İsim...", addBtn: "Ekle", saveMembersBtn: "Katılımcıları Kaydet",
-        newExpenseTitle: "Yeni Harcama", editExpenseTitle: "Harcamayı Düzenle",
-        newExpenseSub: "Bölüştürmek için işlem kaydedin.", editExpenseSub: "Bu harcamayı güncelleyin veya silin.",
-        dateLabel: "Tarih", categoryLabel: "Kategori", descLabel: "Açıklama", descPlaceholder: "ör. Akşam Yemeği",
-        amountLabel: "Tutar", paidByLabel: "Ödeyen", splitBetweenLabel: "Paylaşanlar:", selectAllBtn: "Tümünü Seç", 
-        recordExpenseBtn: "Harcamayı Kaydet", updateExpenseBtn: "Harcamayı Güncelle", cancelEditBtn: "İptal", deleteExpenseBtn: "Harcamayı Sil",
-        settlementTitle: "Ödeme Matrisi", copySummaryBtn: "Özeti Kopyala",
-        historyTitle: "Geçmiş Kayıtlar", generateReportBtn: "Rapor Oluştur",
-        modalSub: "Gizli bir grup defteri oluşturun veya açın.", tabCreate: "Yeni Oluştur", tabRecall: "Var Olanı Aç",
-        ledgerNameLabel: "Defter Adı", ledgerNamePh: "ör. aksam-yemegi", setPinLabel: "4 Haneli PIN Belirleyin", initializeBtn: "Defteri Başlat",
-        selectArchiveLabel: "Arşiv Seç", enterPinLabel: "4 Haneli PIN Girin", accessLedgerBtn: "Deftere Eriş",
-        shareLinkHeader: "Defter Bağlantısını Paylaş", shareLinkSub: "Bu bağlantıya sahip herkes PIN girmelidir.", copyBtn: "Kopyala",
-        taglines: [
-            `<strong class="block font-black text-slate-900 text-xl sm:text-2xl leading-tight">Kolayca harca.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Anın tadını çıkar. Takibi SPENSE'e bırak.</span>`,
-            `<strong class="block font-black text-slate-900 text-xl sm:text-2xl leading-tight">Sadece harcamanı ekle.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kim ödedi? Kimler paylaşıyor? Matematik işini SPENSE yapar.</span>`,
-            `<strong class="block font-black text-slate-900 text-xl sm:text-2xl leading-tight">Rahatça hesabı kapat.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kimin kime borcu var — anında gör.</span>`
-        ]
-    },
-    de: {
-        settingsBtn: "⚙ Einstellungen", shareLinkBtn: "Link Teilen", deleteBtn: "Löschen",
-        participantsTitle: "Teilnehmer", participantsSub: "Personen hinzufügen oder entfernen.",
-        namePlaceholder: "Name...", addBtn: "Hinzufügen", saveMembersBtn: "Teilnehmer Speichern",
-        newExpenseTitle: "Neue Ausgabe", editExpenseTitle: "Ausgabe Bearbeiten",
-        newExpenseSub: "Transaktion eintragen.", editExpenseSub: "Ändern oder löschen Sie diese Ausgabe.",
-        dateLabel: "Datum", categoryLabel: "Kategorie", descLabel: "Beschreibung", descPlaceholder: "z.B. Abendessen",
-        amountLabel: "Betrag", paidByLabel: "Bezahlt von", splitBetweenLabel: "Aufteilen:", selectAllBtn: "Alle", 
-        recordExpenseBtn: "Speichern", updateExpenseBtn: "Aktualisieren", cancelEditBtn: "Abbrechen", deleteExpenseBtn: "Löschen",
-        settlementTitle: "Abrechnungsmatrix", copySummaryBtn: "Kopieren",
-        historyTitle: "Verlauf", generateReportBtn: "Bericht Erstellen",
-        modalSub: "Gruppenbuch öffnen.", tabCreate: "Neu", tabRecall: "Öffnen",
-        ledgerNameLabel: "Name", ledgerNamePh: "z.B. club", setPinLabel: "PIN", initializeBtn: "Starten",
-        selectArchiveLabel: "Archiv Wählen", enterPinLabel: "PIN Eingeben", accessLedgerBtn: "Zugreifen",
-        shareLinkHeader: "Teilen", shareLinkSub: "PIN erforderlich.", copyBtn: "Kopieren",
-        taglines: [
-            `<strong class="block font-black text-slate-900 text-xl sm:text-2xl leading-tight">Einfach ausgeben.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Genieße den Moment. Überlasse die Nachverfolgung SPENSE.</span>`,
-            `<strong class="block font-black text-slate-900 text-xl sm:text-2xl leading-tight">Einfach eintragen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Wer hat bezahlt? Wer teilt es? SPENSE macht die Rechnung.</span>`,
-            `<strong class="block font-black text-slate-900 text-xl sm:text-2xl leading-tight">Einfach abrechnen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Sehen Sie wer wem schuldet — und wie viel.</span>`
-        ]
-    }
-};
+// Safe Translation Resolver
+function getTranslations() {
+    return (window.TRANSLATIONS && window.TRANSLATIONS[currentLang]) 
+        ? window.TRANSLATIONS[currentLang] 
+        : (window.TRANSLATIONS && window.TRANSLATIONS['en']) 
+            ? window.TRANSLATIONS['en'] 
+            : {};
+}
 
-window.TRANSLATIONS = TRANSLATIONS;
-
-// --- CONFIGURATION ROUTER ---
+// Config Loader
 async function getConfig() {
     try {
         const configRes = await fetch('config.json');
@@ -106,6 +44,7 @@ async function getConfig() {
     }
 }
 
+// Backend API Router
 async function callBackend(action, payload = {}) {
     try {
         const sheetUrl = await getConfig();
@@ -122,7 +61,7 @@ async function callBackend(action, payload = {}) {
     }
 }
 
-// --- UTILITY ENGINE ---
+// Date Normalizer
 function formatToISODate(rawDate) {
     if (!rawDate) {
         const today = new Date();
@@ -149,7 +88,184 @@ function findMemberCanonical(targetName) {
     return match || targetName;
 }
 
-// --- ARCHIVE LOADER ---
+// 4-Directional Random Tagline Animation Engine
+let taglineTimer = null;
+let currentTaglineIndex = 0;
+
+function initTaglineCarousel() {
+    const spot = document.getElementById('taglineSpot');
+    if (!spot) return;
+
+    if (taglineTimer) clearInterval(taglineTimer);
+
+    const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
+
+    function cycleTagline() {
+        const t = getTranslations();
+        const activeTaglines = t.taglines || [];
+
+        if (activeTaglines.length === 0) return;
+
+        // Force synchronous DOM reflow to re-trigger CSS keyframe animations
+        spot.className = "w-full text-center leading-snug";
+        void spot.offsetWidth;
+
+        spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
+
+        const randomMotion = motionClasses[Math.floor(Math.random() * motionClasses.length)];
+        spot.className = "w-full text-center leading-snug " + randomMotion;
+
+        currentTaglineIndex++;
+    }
+
+    cycleTagline();
+    taglineTimer = setInterval(cycleTagline, 3200);
+}
+
+function switchLanguage(lang) {
+    currentLang = lang;
+    render();
+    initTaglineCarousel();
+}
+
+// Settings Modal Management
+function selectSettingsLang(lang) {
+    selectedModalLang = lang;
+    ['tr', 'en', 'de'].forEach(l => {
+        const btn = document.getElementById(`setLang${l.toUpperCase()}`);
+        if (btn) {
+            btn.className = (l === lang)
+                ? "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected"
+                : "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
+        }
+    });
+}
+
+function selectSettingsCurrency(curr) {
+    selectedModalCurrency = curr;
+    ['USD', 'EUR', 'TRY'].forEach(c => {
+        const btn = document.getElementById(`setCurr${c}`);
+        if (btn) {
+            btn.className = (c === curr)
+                ? "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected"
+                : "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
+        }
+    });
+}
+
+function selectSettingsTheme(theme) {
+    selectedModalTheme = theme;
+    const themeStyles = { Silk: 'bg-slate-50 text-slate-900', Toon: 'bg-amber-100 text-slate-900', Neon: 'bg-slate-950 text-cyan-400' };
+
+    ['Silk', 'Toon', 'Neon'].forEach(t => {
+        const btn = document.getElementById(`setTheme${t}`);
+        if (btn) {
+            const baseBg = themeStyles[t] || 'bg-slate-50';
+            btn.className = (t === theme)
+                ? `theme-btn py-3 px-2 ${baseBg} rounded-xl text-center transition cursor-pointer option-btn-selected`
+                : `theme-btn py-3 px-2 border-2 border-slate-200 ${baseBg} rounded-xl text-center transition cursor-pointer opacity-50`;
+        }
+    });
+}
+
+function openSettingsModal() { 
+    selectedModalLang = currentLang;
+    selectedModalCurrency = currentCurrency;
+    selectedModalTheme = currentTheme;
+
+    selectSettingsLang(selectedModalLang);
+    selectSettingsCurrency(selectedModalCurrency);
+    selectSettingsTheme(selectedModalTheme);
+
+    document.getElementById('settingsModal')?.classList.remove('hidden'); 
+}
+
+function closeSettingsModal() { 
+    document.getElementById('settingsModal')?.classList.add('hidden'); 
+}
+
+async function saveSettings() {
+    currentLang = selectedModalLang;
+    currentCurrency = selectedModalCurrency;
+    applyTheme(selectedModalTheme);
+
+    document.getElementById('settingsModal')?.classList.add('hidden');
+    render();
+    initTaglineCarousel();
+
+    if (currentTab) {
+        await callBackend('updateSettings', { language: currentLang, currency: currentCurrency, theme: currentTheme });
+    }
+}
+
+// Participant Management
+async function addMemberDirect() {
+    const input = document.getElementById('memberName');
+    if (!input) return;
+    const name = input.value.trim();
+    if (!name) return;
+
+    if (!currentTab) { 
+        alert("Please create or open a ledger first."); 
+        return; 
+    }
+
+    if (ledgerData.members.some(m => m.toLowerCase() === name.toLowerCase())) { 
+        alert("Participant already exists."); 
+        input.value = ''; 
+        return; 
+    }
+
+    ledgerData.members.push(name);
+    if (!unsavedMembers.includes(name)) unsavedMembers.push(name);
+    input.value = '';
+    render();
+
+    const res = await callBackend('addMembers', { names: [name] });
+    if (res && res.status === "success") {
+        unsavedMembers = unsavedMembers.filter(m => m !== name);
+        render();
+    }
+}
+
+async function deleteMember(name, event) {
+    if (event) { event.stopPropagation(); event.preventDefault(); }
+    if (!name) return;
+
+    const canonicalName = findMemberCanonical(name);
+    if (!confirm(`Are you sure you want to remove participant '${canonicalName}'?`)) return;
+
+    const targetLower = canonicalName.toLowerCase();
+    ledgerData.members = ledgerData.members.filter(m => m.toLowerCase() !== targetLower);
+    unsavedMembers = unsavedMembers.filter(m => m.toLowerCase() !== targetLower);
+
+    render();
+    await callBackend('removeMember', { name: canonicalName });
+}
+
+// Welcome Modal Tab Routing
+function switchModalTab(tabMode) {
+    const createSec = document.getElementById('createSection');
+    const recallSec = document.getElementById('recallSection');
+    const tabCreateBtn = document.getElementById('tabCreateBtn');
+    const tabRecallBtn = document.getElementById('tabRecallBtn');
+
+    if (!createSec || !recallSec) return;
+
+    if (tabMode === 'create') {
+        createSec.classList.remove('hidden');
+        recallSec.classList.add('hidden');
+        if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-xl cursor-pointer";
+        if (tabRecallBtn) tabRecallBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer";
+    } else {
+        createSec.classList.add('hidden');
+        recallSec.classList.remove('hidden');
+        if (tabRecallBtn) tabRecallBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-xl cursor-pointer";
+        if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer";
+        loadGoogleSheetsArchive();
+    }
+}
+
 async function loadGoogleSheetsArchive() {
     const select = document.getElementById('archiveSelect');
     if (!select) return;
@@ -182,38 +298,9 @@ async function loadGoogleSheetsArchive() {
         select.innerHTML = `<option value="">-- Select a Ledger Tab --</option>` + 
             ledgers.map(name => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const sharedLedger = urlParams.get('ledger');
-        if (sharedLedger && ledgers.includes(sharedLedger)) {
-            select.value = sharedLedger;
-        }
-
     } catch (error) {
         console.error("Archive fetch error:", error);
         select.innerHTML = `<option value="">-- Error loading archives --</option>`;
-    }
-}
-
-// --- WELCOME MODAL CORE NAVIGATION ---
-function switchModalTab(tabMode) {
-    const createSec = document.getElementById('createSection');
-    const recallSec = document.getElementById('recallSection');
-    const tabCreateBtn = document.getElementById('tabCreateBtn');
-    const tabRecallBtn = document.getElementById('tabRecallBtn');
-
-    if (!createSec || !recallSec) return;
-
-    if (tabMode === 'create') {
-        createSec.classList.remove('hidden');
-        recallSec.classList.add('hidden');
-        if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-xl cursor-pointer";
-        if (tabRecallBtn) tabRecallBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer";
-    } else {
-        createSec.classList.add('hidden');
-        recallSec.classList.remove('hidden');
-        if (tabRecallBtn) tabRecallBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-xl cursor-pointer";
-        if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer";
-        loadGoogleSheetsArchive();
     }
 }
 
@@ -295,70 +382,7 @@ async function recallLedger() {
     }
 }
 
-// --- DYNAMIC 3-SENTENCE TAGLINE ENGINE ---
-let taglineTimer = null;
-let currentTaglineIndex = 0;
-
-function switchLanguage(lang) {
-    currentLang = lang;
-    render();
-    initTaglineCarousel();
-}
-
-function initTaglineCarousel() {
-    const spot = document.getElementById('taglineSpot');
-    if (!spot) return;
-
-    if (taglineTimer) clearInterval(taglineTimer);
-
-    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
-    const activeTaglines = t.taglines;
-
-    function cycleTagline() {
-        spot.style.opacity = '0';
-        setTimeout(() => {
-            spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
-            spot.style.opacity = '1';
-            currentTaglineIndex++;
-        }, 200);
-    }
-
-    spot.style.transition = 'opacity 0.2s ease-in-out';
-    cycleTagline();
-    taglineTimer = setInterval(cycleTagline, 3500);
-}
-
-// --- PARTICIPANTS ENGINE ---
-async function addMemberDirect() {
-    const input = document.getElementById('memberName');
-    if (!input) return;
-    const name = input.value.trim();
-    if (!name) return;
-
-    if (!currentTab) { alert("Access or initialize a ledger first."); return; }
-    if (ledgerData.members.some(m => m.toLowerCase() === name.toLowerCase())) { alert("Participant already exists."); input.value = ''; return; }
-
-    ledgerData.members.push(name);
-    input.value = '';
-    render();
-
-    await callBackend('addMembers', { names: [name] });
-}
-
-async function deleteMember(name, event) {
-    if (event) { event.stopPropagation(); event.preventDefault(); }
-    if (!name) return;
-
-    const canonicalName = findMemberCanonical(name);
-    if (!confirm(`Are you sure you want to remove participant '${canonicalName}'?`)) return;
-
-    ledgerData.members = ledgerData.members.filter(m => m.toLowerCase() !== canonicalName.toLowerCase());
-    render();
-
-    await callBackend('removeMember', { name: canonicalName });
-}
-
-// --- EXPENSE ENGINE ---
+// Expense Management
 async function addExpense() {
     const rawDate = document.getElementById('expenseDate')?.value;
     const date = formatToISODate(rawDate);
@@ -402,7 +426,7 @@ function resetExpenseForm() {
     document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = true);
 }
 
-// --- SETTLEMENT MATRIX ENGINE ---
+// Settlement Matrix Calculation
 function calculateSettlement() {
     const balances = {};
     const lowerMap = {};
@@ -415,8 +439,7 @@ function calculateSettlement() {
 
     ledgerData.expenses.forEach(e => {
         const amt = parseFloat(e.amount) || 0;
-        const rawSplits = Array.isArray(e.splitWith) ? e.splitWith : [];
-        const splits = rawSplits.map(s => s.toLowerCase());
+        const splits = (Array.isArray(e.splitWith) ? e.splitWith : []).map(s => s.toLowerCase());
 
         if (splits.length === 0) return;
         const share = amt / splits.length;
@@ -458,9 +481,9 @@ function copySettlementSummary() {
         .catch(() => alert("Summary:\n\n" + summaryText));
 }
 
-// --- MASTER UI RENDERING ENGINE ---
+// Master UI Rendering Engine
 function render() {
-    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    const t = getTranslations();
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const k = el.getAttribute('data-i18n');
@@ -472,16 +495,13 @@ function render() {
         if (t[k]) el.placeholder = t[k];
     });
 
-    // Sync Welcome Modal Language Toggle active styles
     ['tr', 'en', 'de'].forEach(l => {
-        const btns = [document.getElementById(`btnLang${l.toUpperCase()}`), document.getElementById(`lang-${l}`)];
-        btns.forEach(btn => {
-            if (btn) {
-                btn.className = l === currentLang
-                    ? "text-amber-600 font-black cursor-pointer transition px-1 underline"
-                    : "hover:text-amber-600 cursor-pointer transition px-1 opacity-70";
-            }
-        });
+        const btn = document.getElementById(`btnLang${l.toUpperCase()}`);
+        if (btn) {
+            btn.className = (l === currentLang)
+                ? "text-amber-600 font-black cursor-pointer transition px-1 underline"
+                : "hover:text-amber-600 cursor-pointer transition px-1 opacity-70";
+        }
     });
 
     const symbolEl = document.getElementById('currencySymbol');
@@ -523,7 +543,7 @@ function renderExpenseFormHeader() {
     const titleEl = document.getElementById('expenseFormTitle');
     const subEl = document.getElementById('expenseFormSub');
     if (!titleEl || !subEl) return;
-    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    const t = getTranslations();
     titleEl.innerText = editingExpenseId ? t.editExpenseTitle : t.newExpenseTitle;
     subEl.innerText = editingExpenseId ? t.editExpenseSub : t.newExpenseSub;
 }
@@ -597,8 +617,6 @@ function goHome() {
     initTaglineCarousel();
 }
 
-function openSettingsModal() { document.getElementById('settingsModal')?.classList.remove('hidden'); }
-function closeSettingsModal() { document.getElementById('settingsModal')?.classList.add('hidden'); }
 function openShareModal() {
     document.getElementById('shareModal')?.classList.remove('hidden');
     const input = document.getElementById('shareLinkInput');
@@ -616,12 +634,20 @@ async function deleteActiveLedger() {
     goHome();
 }
 
-// --- GLOBAL EXPORTS ---
+function selectAllSplits() {
+    document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = true);
+}
+
+// Global Window Function Attachments
 window.switchModalTab = switchModalTab;
 window.createNewLedger = createNewLedger;
 window.recallLedger = recallLedger;
 window.openSettingsModal = openSettingsModal;
 window.closeSettingsModal = closeSettingsModal;
+window.selectSettingsLang = selectSettingsLang;
+window.selectSettingsCurrency = selectSettingsCurrency;
+window.selectSettingsTheme = selectSettingsTheme;
+window.saveSettings = saveSettings;
 window.openShareModal = openShareModal;
 window.closeShareModal = closeShareModal;
 window.copyShareLink = copyShareLink;
@@ -632,8 +658,9 @@ window.deleteMember = deleteMember;
 window.addExpense = addExpense;
 window.copySettlementSummary = copySettlementSummary;
 window.switchLanguage = switchLanguage;
+window.selectAllSplits = selectAllSplits;
 
-// --- DOM INITIALIZATION ---
+// System Initialization
 document.addEventListener('DOMContentLoaded', () => {
     initTaglineCarousel();
     const dateInput = document.getElementById('expenseDate');
