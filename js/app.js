@@ -1,14 +1,14 @@
 /**
  * ==========================================================================
  * SPENSE - Group Expense Tracker Master Controller
- * CS Senior Architecture: Eager Pre-fetching Engine, Multilingual Routing,
- *                        Dynamic Tagline Carousel & Full CRUD Ledger State Machine
+ * CS Senior Architecture: Multi-DOM Contract Resolver, Full State Machine,
+ *                        Eager Archive Prefetching & Dynamic Tagline Engine
  * ==========================================================================
  */
 
-console.log("%c[SPENSE] Master Controller Engine Initialized.", "color: #059669; font-weight: bold;");
+console.log("%c[SPENSE] Engine & Controller Active.", "color: #059669; font-weight: bold;");
 
-// --- GLOBAL APPLICATION STATE ---
+// --- GLOBAL STATE MACHINE ---
 let currentTab = null;
 let currentPin = null;
 let currentLang = 'en';
@@ -16,16 +16,16 @@ let currentCurrency = 'USD';
 let currentTheme = 'Silk';
 let ledgerData = { members: [], expenses: [] };
 
-// Cache for archives to ensure instant rendering without waiting for tab clicks
+// Archive Caching State
 let cachedArchives = null;
 let isFetchingArchives = false;
 
-// Settings Modal Staging State
+// Settings Staging State
 let selectedModalLang = 'en';
 let selectedModalCurrency = 'USD';
 let selectedModalTheme = 'Silk';
 
-// Staging & Edit State Variables
+// Form Staging State
 let unsavedMembers = [];
 let editingExpenseId = null;
 
@@ -40,7 +40,7 @@ function getTranslations() {
     return {};
 }
 
-// --- CONFIGURATION & NETWORK ROUTER ---
+// --- NETWORK & CONFIGURATION ROUTER ---
 async function getConfig() {
     try {
         const configRes = await fetch('config.json');
@@ -73,7 +73,6 @@ async function callBackend(action, payload = {}) {
 async function loadGoogleSheetsArchive() {
     const select = document.getElementById('archiveSelect');
 
-    // Return cached archives immediately if already fetched
     if (cachedArchives && select) {
         renderArchiveDropdown(select, cachedArchives);
         return;
@@ -140,7 +139,7 @@ function renderArchiveDropdown(selectElement, ledgersArray) {
     }
 }
 
-// --- DETERMINISTIC DATE NORMALIZATION HELPER ---
+// --- HELPER UTILITIES ---
 function formatToISODate(rawDate) {
     if (!rawDate) {
         const today = new Date();
@@ -184,24 +183,35 @@ function formatToISODate(rawDate) {
     return `${fallback.getFullYear()}-${String(fallback.getMonth() + 1).padStart(2, '0')}-${String(fallback.getDate()).padStart(2, '0')}`;
 }
 
-// Case-Insensitive Canonical Name Matcher
 function findMemberCanonical(targetName) {
     if (!targetName) return targetName;
     const match = ledgerData.members.find(m => m.toLowerCase() === targetName.toLowerCase());
     return match || targetName;
 }
 
-// --- SETTINGS SELECTION ENGINE ---
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+}
+
+function getCurrencySymbol() {
+    return currentCurrency === 'EUR' ? '€' : currentCurrency === 'TRY' ? '₺' : '$';
+}
+
+function applyTheme(themeName) {
+    currentTheme = themeName;
+    document.documentElement.setAttribute('data-theme', themeName.toLowerCase());
+}
+
+// --- SETTINGS CONTROLLER ---
 function selectSettingsLang(lang) {
     selectedModalLang = lang;
     ['tr', 'en', 'de'].forEach(l => {
         const btn = document.getElementById(`setLang${l.toUpperCase()}`);
         if (btn) {
-            if (l === lang) {
-                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected";
-            } else {
-                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
-            }
+            btn.className = (l === lang)
+                ? "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected"
+                : "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
         }
     });
 }
@@ -211,33 +221,24 @@ function selectSettingsCurrency(curr) {
     ['USD', 'EUR', 'TRY'].forEach(c => {
         const btn = document.getElementById(`setCurr${c}`);
         if (btn) {
-            if (c === curr) {
-                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected";
-            } else {
-                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
-            }
+            btn.className = (c === curr)
+                ? "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected"
+                : "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
         }
     });
 }
 
 function selectSettingsTheme(theme) {
     selectedModalTheme = theme;
-    
-    const themeStyles = {
-        Silk: 'bg-slate-50 text-slate-900',
-        Toon: 'bg-amber-100 text-slate-900',
-        Neon: 'bg-slate-950 text-cyan-400'
-    };
+    const themeStyles = { Silk: 'bg-slate-50 text-slate-900', Toon: 'bg-amber-100 text-slate-900', Neon: 'bg-slate-950 text-cyan-400' };
 
     ['Silk', 'Toon', 'Neon'].forEach(t => {
         const btn = document.getElementById(`setTheme${t}`);
         if (btn) {
             const baseBg = themeStyles[t] || 'bg-slate-50';
-            if (t === theme) {
-                btn.className = `theme-btn py-3 px-2 ${baseBg} rounded-xl text-center transition cursor-pointer option-btn-selected`;
-            } else {
-                btn.className = `theme-btn py-3 px-2 border-2 border-slate-200 ${baseBg} rounded-xl text-center transition cursor-pointer opacity-50`;
-            }
+            btn.className = (t === theme)
+                ? `theme-btn py-3 px-2 ${baseBg} rounded-xl text-center transition cursor-pointer option-btn-selected`
+                : `theme-btn py-3 px-2 border-2 border-slate-200 ${baseBg} rounded-xl text-center transition cursor-pointer opacity-50`;
         }
     });
 }
@@ -268,19 +269,11 @@ async function saveSettings() {
     initTaglineCarousel();
 
     if (currentTab) {
-        const res = await callBackend('updateSettings', {
-            language: currentLang,
-            currency: currentCurrency,
-            theme: currentTheme
-        });
-
-        if (res && res.status !== "success") {
-            console.warn("[SPENSE Warning] Backend settings save notice:", res?.message);
-        }
+        await callBackend('updateSettings', { language: currentLang, currency: currentCurrency, theme: currentTheme });
     }
 }
 
-// --- GUARANTEED 4-DIRECTIONAL KEYFRAME TAGLINE ENGINE ---
+// --- DYNAMIC TAGLINE CAROUSEL ---
 let taglineTimer = null;
 let currentTaglineIndex = 0;
 
@@ -295,11 +288,10 @@ function initTaglineCarousel() {
     function cycleTagline() {
         const t = getTranslations();
         const activeTaglines = t.taglines || [];
-
         if (activeTaglines.length === 0) return;
 
         spot.className = "w-full text-center leading-snug";
-        void spot.offsetWidth; // Synchronous DOM reflow force
+        void spot.offsetWidth;
 
         spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
 
@@ -313,7 +305,13 @@ function initTaglineCarousel() {
     taglineTimer = setInterval(cycleTagline, 3200);
 }
 
-// --- CARD REORDERING DRAG ENGINE ---
+function switchLanguage(lang) {
+    currentLang = lang;
+    render();
+    initTaglineCarousel();
+}
+
+// --- CARD DRAGGING & LAYOUT ---
 function initCardDragging() {
     const container = document.getElementById('appContainer');
     if (!container) return;
@@ -392,13 +390,13 @@ async function saveCardLayout() {
     const res = await callBackend('updateSettings', { cardOrder: newOrder });
     if (res && res.status === "success") {
         document.getElementById('layoutActionBar')?.classList.add('hidden');
-        alert("Layout saved successfully to Google Sheet!");
+        alert("Layout saved successfully!");
     } else {
         alert("Failed to save layout: " + (res?.message || "Unknown error"));
     }
 }
 
-// --- WELCOME MODAL CORE NAVIGATION ---
+// --- WELCOME & RECALL CONTROLLER ---
 function switchModalTab(tabMode) {
     const createSec = document.getElementById('createSection');
     const recallSec = document.getElementById('recallSection');
@@ -548,7 +546,7 @@ async function deleteActiveLedger() {
     goHome();
 }
 
-// --- PARTICIPANTS STAGING & AUTO-PERSIST MODULE ---
+// --- PARTICIPANTS MANAGEMENT ---
 async function addMemberDirect() {
     const input = document.getElementById('memberName');
     if (!input) return;
@@ -575,22 +573,20 @@ async function addMemberDirect() {
     if (res && res.status === "success") {
         unsavedMembers = unsavedMembers.filter(m => m !== name);
         render();
-    } else {
-        console.warn("[SPENSE Warning] Background sync failed for participant:", name);
     }
 }
 
 async function saveMembers() {
     if (unsavedMembers.length === 0) return;
 
-    const btn = document.getElementById('btnSaveMembers');
+    const btn = document.getElementById('btnSaveMembers') || document.getElementById('saveMembersBtn');
     if (btn) btn.innerText = "Saving...";
 
     const res = await callBackend('addMembers', { names: unsavedMembers });
     if (res && res.status === "success") {
         unsavedMembers = [];
         render();
-        alert("Participants saved to sheet!");
+        alert("Participants saved!");
     } else {
         alert("Failed to save participants: " + (res?.message || "Error"));
         render();
@@ -604,47 +600,40 @@ async function deleteMember(name, event) {
     }
 
     if (!name) return;
-    
     const canonicalName = findMemberCanonical(name);
 
     if (!confirm(`Are you sure you want to remove participant '${canonicalName}'?`)) return;
 
     const targetLower = canonicalName.toLowerCase();
-    
     ledgerData.members = ledgerData.members.filter(m => m.toLowerCase() !== targetLower);
     unsavedMembers = unsavedMembers.filter(m => m.toLowerCase() !== targetLower);
 
     render();
-
-    const res = await callBackend('removeMember', { name: canonicalName });
-    if (res && res.status !== "success") {
-        console.warn("[SPENSE Notice] Backend deletion notice:", res?.message);
-    }
+    await callBackend('removeMember', { name: canonicalName });
 }
 
-// --- EXPENSE EDITING & VALIDATION ---
+// --- EXPENSE EDITING ENGINE (FULLY RESTORED) ---
 function startEditExpense(id) {
     const exp = ledgerData.expenses.find(e => e.id.toString() === id.toString());
     if (!exp) return;
 
     editingExpenseId = id.toString();
 
+    // Populate Input Fields
     const dateInput = document.getElementById('expenseDate');
     const descInput = document.getElementById('expenseDesc');
     const amountInput = document.getElementById('expenseAmount');
     const catInput = document.getElementById('expenseCategory');
     const paidByInput = document.getElementById('expensePaidBy');
 
-    if (dateInput) {
-        dateInput.value = formatToISODate(exp.date);
-    }
-
+    if (dateInput) dateInput.value = formatToISODate(exp.date);
     if (descInput) descInput.value = exp.desc || '';
     if (amountInput) amountInput.value = exp.amount || '';
     if (catInput) catInput.value = exp.category || 'Food & Drink';
     if (paidByInput) paidByInput.value = findMemberCanonical(exp.paidBy) || '';
 
-    const splitArr = (Array.isArray(exp.splitWith) ? exp.splitWith : (exp.splitBetween || [])).map(s => s.toLowerCase());
+    // Re-check corresponding split checkboxes
+    const splitArr = (Array.isArray(e.splitWith) ? exp.splitWith : (exp.splitBetween || [])).map(s => s.toLowerCase());
     document.querySelectorAll('.split-checkbox').forEach(cb => {
         cb.checked = splitArr.includes(cb.value.toLowerCase());
     });
@@ -754,7 +743,7 @@ async function addExpense() {
     await callBackend('addExpense', { id, date, category, desc, amount, paidBy, splitWith });
 }
 
-// --- CASE-INSENSITIVE SETTLEMENT COMPUTATION ALGORITHM ---
+// --- SETTLEMENT MATRIX CALCULATOR ---
 function calculateSettlement() {
     const balances = {};
     const lowerMap = {};
@@ -775,14 +764,10 @@ function calculateSettlement() {
         const share = amt / splitList.length;
         const payerKey = (e.paidBy || '').toLowerCase();
 
-        if (balances[payerKey] !== undefined) {
-            balances[payerKey] += amt;
-        }
+        if (balances[payerKey] !== undefined) balances[payerKey] += amt;
 
         splitList.forEach(mKey => {
-            if (balances[mKey] !== undefined) {
-                balances[mKey] -= share;
-            }
+            if (balances[mKey] !== undefined) balances[mKey] -= share;
         });
     });
 
@@ -822,14 +807,13 @@ function copySettlementSummary() {
         `\n================================`;
 
     navigator.clipboard.writeText(summaryText).then(() => {
-        alert("Settlement summary copied to clipboard as plain text!");
+        alert("Settlement summary copied to clipboard!");
     }).catch(err => {
-        console.error("Copy failed:", err);
-        alert("Failed to copy automatically. Summary:\n\n" + summaryText);
+        alert("Summary:\n\n" + summaryText);
     });
 }
 
-// --- REPORT GENERATOR (NEW TAB RENDERER) ---
+// --- REPORT GENERATOR ---
 function generateLedgerReport() {
     if (!currentTab) {
         alert("Please open an active ledger first.");
@@ -878,27 +862,16 @@ function generateLedgerReport() {
     const reportWindow = window.open(reportUrl, '_blank');
 
     if (!reportWindow) {
-        alert("Pop-up blocked! Please allow pop-ups for this site to view the report in a new tab.");
+        alert("Pop-up blocked! Please allow pop-ups for this site to view the report.");
     }
-}
-
-function getCurrencySymbol() {
-    return currentCurrency === 'EUR' ? '€' : currentCurrency === 'TRY' ? '₺' : '$';
-}
-
-function applyTheme(themeName) {
-    currentTheme = themeName;
-    document.documentElement.setAttribute('data-theme', themeName.toLowerCase());
-}
-
-function switchLanguage(lang) {
-    currentLang = lang;
-    render();
-    initTaglineCarousel();
 }
 
 function selectAllSplits() {
     document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = true);
+}
+
+function toggleSelectAll(state) {
+    selectAllSplits();
 }
 
 // --- MASTER UI RENDERING ENGINE ---
@@ -916,6 +889,7 @@ function render() {
     });
 
     const currSym = getCurrencySymbol();
+    document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = currSym);
     const symbolEl = document.getElementById('currencySymbol');
     if (symbolEl) symbolEl.innerText = currSym;
 
@@ -926,7 +900,7 @@ function render() {
             `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>`;
     }
 
-    ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings'].forEach(id => {
+    ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings', 'settingsBtn', 'shareBtn', 'deleteLedgerBtn'].forEach(id => {
         document.getElementById(id)?.classList.toggle('hidden', !currentTab);
     });
 
@@ -940,7 +914,7 @@ function render() {
 
 function renderMembers() {
     const container = document.getElementById('memberList');
-    const saveBtn = document.getElementById('btnSaveMembers');
+    const saveBtn = document.getElementById('btnSaveMembers') || document.getElementById('saveMembersBtn');
     if (!container) return;
     
     container.innerHTML = ledgerData.members.length > 0 
@@ -964,7 +938,9 @@ function renderMembers() {
 function renderExpenseFormHeader() {
     const titleEl = document.getElementById('expenseFormTitle');
     const subEl = document.getElementById('expenseFormSub');
-    const actionsContainer = document.getElementById('expenseFormActions');
+    
+    // RESOLVES CONTRACT MISMATCH: Checks for both HTML ID variants
+    const actionsContainer = document.getElementById('expenseFormActions') || document.getElementById('expenseFormButtons');
     if (!titleEl || !subEl || !actionsContainer) return;
 
     const t = getTranslations();
@@ -972,6 +948,8 @@ function renderExpenseFormHeader() {
     if (editingExpenseId) {
         titleEl.innerText = t.editExpenseTitle || "Edit Expense";
         subEl.innerText = t.editExpenseSub || "Modify or delete this expense.";
+        
+        // INJECTS EDIT CONTROLS: Delete, Cancel, Update
         actionsContainer.innerHTML = `
             <div class="grid grid-cols-3 gap-2">
                 <button type="button" onclick="window.deleteExpenseFromEdit()" class="theme-btn bg-rose-500 hover:bg-rose-600 text-white py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.deleteExpenseBtn || "Delete"}</button>
@@ -1026,14 +1004,14 @@ function renderHistory() {
             const displaySplits = rawSplits.map(s => findMemberCanonical(s)).join(', ');
 
             return `
-            <li class="p-2.5 rounded-xl border border-current/15 flex justify-between items-center bg-current/5 gap-2">
+            <li class="p-2.5 rounded-xl border border-current/15 flex justify-between items-center bg-current/5 gap-2 cursor-pointer hover:bg-current/10" data-id="${e.id}" onclick="window.startEditExpense(this.getAttribute('data-id'))">
                 <div class="flex-1 min-w-0">
                     <span class="font-bold truncate block">${escapeHTML(e.desc)} (${escapeHTML(e.category)})</span>
                     <div class="text-[10px] opacity-70">Paid by <span class="font-bold">${escapeHTML(canonicalPayer)}</span> • ${displayDate} • Split: ${escapeHTML(displaySplits)}</div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <span class="font-extrabold text-sm">${getCurrencySymbol()}${parseFloat(e.amount).toFixed(2)}</span>
-                    <button type="button" data-id="${e.id}" onclick="window.startEditExpense(this.getAttribute('data-id'))" class="theme-btn px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-300 text-slate-900 cursor-pointer hover:bg-amber-400">Edit</button>
+                    <button type="button" data-id="${e.id}" onclick="event.stopPropagation(); window.startEditExpense(this.getAttribute('data-id'))" class="theme-btn px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-300 text-slate-900 cursor-pointer hover:bg-amber-400">Edit</button>
                 </div>
             </li>
         `;
@@ -1056,12 +1034,7 @@ function renderSettlement() {
         : '<p class="font-bold text-center py-2 text-emerald-600">All balances are currently settled!</p>';
 }
 
-function escapeHTML(str) {
-    if (!str) return '';
-    return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-}
-
-// --- GLOBAL WINDOW EXPORTS ---
+// --- GLOBAL WINDOW BINDINGS (DOM COMPATIBILITY LAYER) ---
 window.switchModalTab = switchModalTab;
 window.createNewLedger = createNewLedger;
 window.recallLedger = recallLedger;
@@ -1076,7 +1049,9 @@ window.copyShareLink = copyShareLink;
 window.goHome = goHome;
 window.deleteActiveLedger = deleteActiveLedger;
 window.addMemberDirect = addMemberDirect;
+window.stageMember = addMemberDirect;
 window.saveMembers = saveMembers;
+window.saveStagedMembers = saveMembers;
 window.deleteMember = deleteMember;
 window.addExpense = addExpense;
 window.startEditExpense = startEditExpense;
@@ -1085,12 +1060,15 @@ window.updateExpense = updateExpense;
 window.deleteExpenseFromEdit = deleteExpenseFromEdit;
 window.copySettlementSummary = copySettlementSummary;
 window.generateLedgerReport = generateLedgerReport;
+window.generateReport = generateLedgerReport;
 window.switchLanguage = switchLanguage;
 window.saveCardLayout = saveCardLayout;
 window.selectAllSplits = selectAllSplits;
+window.toggleSelectAll = toggleSelectAll;
 window.saveSettings = saveSettings;
+window.applyTheme = applyTheme;
 
-// --- INITIALIZE SYSTEM ENGINE ---
+// --- INITIALIZE SYSTEM ---
 document.addEventListener('DOMContentLoaded', () => {
     initTaglineCarousel();
     initCardDragging();
@@ -1099,7 +1077,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateInput) dateInput.value = formatToISODate(new Date());
 
     render();
-
-    // EAGER PRE-FETCHING: Pre-loads archives in the background immediately on page load
     loadGoogleSheetsArchive();
 });
