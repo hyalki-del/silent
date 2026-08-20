@@ -83,12 +83,6 @@
 </head>
 <body class="min-h-screen p-3 sm:p-8 antialiased">
     <div class="max-w-5xl mx-auto space-y-6">
-        
-        <!-- Save Layout Notification Bar -->
-        <div id="layoutActionBar" class="hidden bg-amber-400 border-2 border-slate-900 text-slate-900 px-4 py-2.5 rounded-2xl font-black text-xs flex justify-between items-center shadow-[3px_3px_0px_#0f172a] animate-bounce">
-            <span>Layout modified! Save your new card arrangement to Google Sheets.</span>
-            <button id="btnSaveCardLayout" type="button" onclick="window.saveCardLayout()" class="bg-slate-900 text-amber-300 px-3 py-1 rounded-xl uppercase tracking-wider text-[10px] cursor-pointer hover:bg-slate-800">Save Layout</button>
-        </div>
 
         <div id="appContainer" class="space-y-6">
             
@@ -127,10 +121,6 @@
                     <div class="flex gap-2">
                         <input type="text" id="memberName" data-i18n-ph="namePlaceholder" placeholder="Name..." class="flex-1 theme-input px-3 py-2 text-sm" onkeypress="if(event.key==='Enter') window.addMemberDirect()">
                         <button id="btnAddMember" type="button" onclick="window.addMemberDirect()" data-i18n="addBtn" class="theme-btn px-4 py-2 text-xs font-extrabold cursor-pointer">Add</button>
-                    </div>
-                    
-                    <div class="flex justify-end">
-                        <button id="btnSaveMembers" type="button" onclick="window.saveMembers()" data-i18n="saveMembersBtn" class="hidden theme-btn bg-amber-300 hover:bg-amber-400 text-slate-900 px-3 py-1.5 text-xs font-black uppercase tracking-wider cursor-pointer animate-pulse">Save Participants</button>
                     </div>
 
                     <div id="memberList" class="text-sm flex flex-wrap gap-2 pt-1"></div>
@@ -191,7 +181,7 @@
                 <div id="settlementList" class="space-y-2 text-xs min-h-[80px]"></div>
             </section>
 
-            <!-- Ledger History Card (Enhanced High-Visibility Report Button) -->
+            <!-- Ledger History Card -->
             <section class="theme-card p-6 space-y-4" data-card-id="history">
                 <div class="card-drag-handle" draggable="true" title="Drag to reorder card">⠿</div>
                 <div class="flex justify-between items-center border-b border-current/10 pb-3 pr-8 flex-wrap gap-2">
