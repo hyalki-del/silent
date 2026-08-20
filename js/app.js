@@ -1,8 +1,8 @@
 /**
  * ==========================================================================
  * SPENSE - Group Expense Tracker Master Controller
- * CS Senior Architecture: Full Multi-Language Routing, Dynamic Tagline Engine,
- *                        Full CRUD State Machine & Pristine Backend Compatibility
+ * CS Senior Architecture: Eager Pre-fetching Engine, Multilingual Routing,
+ *                        Dynamic Tagline Carousel & Full CRUD Ledger State Machine
  * ==========================================================================
  */
 
@@ -15,6 +15,10 @@ let currentLang = 'en';
 let currentCurrency = 'USD';
 let currentTheme = 'Silk';
 let ledgerData = { members: [], expenses: [] };
+
+// Cache for archives to ensure instant rendering without waiting for tab clicks
+let cachedArchives = null;
+let isFetchingArchives = false;
 
 // Settings Modal Staging State
 let selectedModalLang = 'en';
@@ -62,6 +66,77 @@ async function callBackend(action, payload = {}) {
     } catch (err) {
         console.error("Backend communication error:", err);
         return { status: "error", message: err.toString() };
+    }
+}
+
+// --- EAGER PRE-FETCHING ARCHIVE ENGINE ---
+async function loadGoogleSheetsArchive() {
+    const select = document.getElementById('archiveSelect');
+
+    // Return cached archives immediately if already fetched
+    if (cachedArchives && select) {
+        renderArchiveDropdown(select, cachedArchives);
+        return;
+    }
+
+    if (isFetchingArchives) return;
+    isFetchingArchives = true;
+
+    if (select && select.options.length <= 1) {
+        select.innerHTML = `<option value="">-- Reading Google Sheets... --</option>`;
+    }
+
+    try {
+        const sheetUrl = await getConfig();
+        if (!sheetUrl) {
+            if (select) select.innerHTML = `<option value="">-- Missing sheetUrl in config.json --</option>`;
+            isFetchingArchives = false;
+            return;
+        }
+
+        const res = await fetch(sheetUrl);
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+        
+        const rawData = await res.json();
+        let ledgers = [];
+        
+        if (Array.isArray(rawData)) {
+            ledgers = rawData;
+        } else if (typeof rawData === 'object' && rawData !== null) {
+            ledgers = rawData.archives || rawData.sheets || rawData.ledgers || Object.keys(rawData);
+        }
+
+        cachedArchives = ledgers
+            .filter(Boolean)
+            .filter(name => name.toString().trim().toLowerCase() !== 'metadata' && name.toString().trim().toLowerCase() !== 'counter');
+
+        if (select) {
+            renderArchiveDropdown(select, cachedArchives);
+        }
+
+    } catch (error) {
+        console.error("Archive pre-fetch error:", error);
+        if (select) select.innerHTML = `<option value="">-- Error loading archives --</option>`;
+    } finally {
+        isFetchingArchives = false;
+    }
+}
+
+function renderArchiveDropdown(selectElement, ledgersArray) {
+    if (!selectElement) return;
+
+    if (!ledgersArray || ledgersArray.length === 0) {
+        selectElement.innerHTML = `<option value="">-- No archives found --</option>`;
+        return;
+    }
+
+    selectElement.innerHTML = `<option value="">-- Select a Ledger Tab --</option>` + 
+        ledgersArray.map(name => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedLedger = urlParams.get('ledger');
+    if (sharedLedger && ledgersArray.includes(sharedLedger)) {
+        selectElement.value = sharedLedger;
     }
 }
 
@@ -114,46 +189,6 @@ function findMemberCanonical(targetName) {
     if (!targetName) return targetName;
     const match = ledgerData.members.find(m => m.toLowerCase() === targetName.toLowerCase());
     return match || targetName;
-}
-
-// --- GUARANTEED 4-DIRECTIONAL KEYFRAME TAGLINE ENGINE ---
-let taglineTimer = null;
-let currentTaglineIndex = 0;
-
-function initTaglineCarousel() {
-    const spot = document.getElementById('taglineSpot');
-    if (!spot) return;
-
-    if (taglineTimer) clearInterval(taglineTimer);
-
-    const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
-
-    function cycleTagline() {
-        const t = getTranslations();
-        const activeTaglines = t.taglines || [];
-
-        if (activeTaglines.length === 0) return;
-
-        // Force synchronous DOM reflow to re-trigger CSS keyframe animations
-        spot.className = "w-full text-center leading-snug";
-        void spot.offsetWidth;
-
-        spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
-
-        const randomMotion = motionClasses[Math.floor(Math.random() * motionClasses.length)];
-        spot.className = "w-full text-center leading-snug " + randomMotion;
-
-        currentTaglineIndex++;
-    }
-
-    cycleTagline();
-    taglineTimer = setInterval(cycleTagline, 3200);
-}
-
-function switchLanguage(lang) {
-    currentLang = lang;
-    render();
-    initTaglineCarousel();
 }
 
 // --- SETTINGS SELECTION ENGINE ---
@@ -245,6 +280,39 @@ async function saveSettings() {
     }
 }
 
+// --- GUARANTEED 4-DIRECTIONAL KEYFRAME TAGLINE ENGINE ---
+let taglineTimer = null;
+let currentTaglineIndex = 0;
+
+function initTaglineCarousel() {
+    const spot = document.getElementById('taglineSpot');
+    if (!spot) return;
+
+    if (taglineTimer) clearInterval(taglineTimer);
+
+    const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
+
+    function cycleTagline() {
+        const t = getTranslations();
+        const activeTaglines = t.taglines || [];
+
+        if (activeTaglines.length === 0) return;
+
+        spot.className = "w-full text-center leading-snug";
+        void spot.offsetWidth; // Synchronous DOM reflow force
+
+        spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
+
+        const randomMotion = motionClasses[Math.floor(Math.random() * motionClasses.length)];
+        spot.className = "w-full text-center leading-snug " + randomMotion;
+
+        currentTaglineIndex++;
+    }
+
+    cycleTagline();
+    taglineTimer = setInterval(cycleTagline, 3200);
+}
+
 // --- CARD REORDERING DRAG ENGINE ---
 function initCardDragging() {
     const container = document.getElementById('appContainer');
@@ -330,58 +398,6 @@ async function saveCardLayout() {
     }
 }
 
-// --- ARCHIVE LOADER WITH METADATA EXCLUSION ---
-async function loadGoogleSheetsArchive() {
-    const select = document.getElementById('archiveSelect');
-    if (!select) return;
-
-    if (select.options.length <= 1) {
-        select.innerHTML = `<option value="">-- Reading Google Sheets... --</option>`;
-    }
-
-    try {
-        const sheetUrl = await getConfig();
-        if (!sheetUrl) {
-            select.innerHTML = `<option value="">-- Missing sheetUrl in config.json --</option>`;
-            return;
-        }
-
-        const res = await fetch(sheetUrl);
-        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-        
-        const rawData = await res.json();
-        let ledgers = [];
-        
-        if (Array.isArray(rawData)) {
-            ledgers = rawData;
-        } else if (typeof rawData === 'object' && rawData !== null) {
-            ledgers = rawData.archives || rawData.sheets || rawData.ledgers || Object.keys(rawData);
-        }
-
-        ledgers = ledgers
-            .filter(Boolean)
-            .filter(name => name.toString().trim().toLowerCase() !== 'metadata' && name.toString().trim().toLowerCase() !== 'counter');
-
-        if (ledgers.length === 0) {
-            select.innerHTML = `<option value="">-- No archives found --</option>`;
-            return;
-        }
-
-        select.innerHTML = `<option value="">-- Select a Ledger Tab --</option>` + 
-            ledgers.map(name => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const sharedLedger = urlParams.get('ledger');
-        if (sharedLedger && ledgers.includes(sharedLedger)) {
-            select.value = sharedLedger;
-        }
-
-    } catch (error) {
-        console.error("Archive fetch error:", error);
-        select.innerHTML = `<option value="">-- Error loading archives --</option>`;
-    }
-}
-
 // --- WELCOME MODAL CORE NAVIGATION ---
 function switchModalTab(tabMode) {
     const createSec = document.getElementById('createSection');
@@ -403,7 +419,9 @@ function switchModalTab(tabMode) {
         if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer";
         
         const select = document.getElementById('archiveSelect');
-        if (select && (select.options.length <= 1 || select.value === "")) {
+        if (cachedArchives && select) {
+            renderArchiveDropdown(select, cachedArchives);
+        } else {
             loadGoogleSheetsArchive();
         }
     }
@@ -562,10 +580,6 @@ async function addMemberDirect() {
     }
 }
 
-function stageMember() {
-    addMemberDirect();
-}
-
 async function saveMembers() {
     if (unsavedMembers.length === 0) return;
 
@@ -581,10 +595,6 @@ async function saveMembers() {
         alert("Failed to save participants: " + (res?.message || "Error"));
         render();
     }
-}
-
-function saveStagedMembers() {
-    saveMembers();
 }
 
 async function deleteMember(name, event) {
@@ -812,7 +822,7 @@ function copySettlementSummary() {
         `\n================================`;
 
     navigator.clipboard.writeText(summaryText).then(() => {
-        alert("Settlement summary copied to clipboard!");
+        alert("Settlement summary copied to clipboard as plain text!");
     }).catch(err => {
         console.error("Copy failed:", err);
         alert("Failed to copy automatically. Summary:\n\n" + summaryText);
@@ -872,10 +882,6 @@ function generateLedgerReport() {
     }
 }
 
-function generateReport() {
-    generateLedgerReport();
-}
-
 function getCurrencySymbol() {
     return currentCurrency === 'EUR' ? '€' : currentCurrency === 'TRY' ? '₺' : '$';
 }
@@ -885,14 +891,14 @@ function applyTheme(themeName) {
     document.documentElement.setAttribute('data-theme', themeName.toLowerCase());
 }
 
-function toggleSelectAll(selectState) {
-    document.querySelectorAll('.split-checkbox').forEach(cb => {
-        cb.checked = selectState !== undefined ? selectState : true;
-    });
+function switchLanguage(lang) {
+    currentLang = lang;
+    render();
+    initTaglineCarousel();
 }
 
 function selectAllSplits() {
-    toggleSelectAll(true);
+    document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = true);
 }
 
 // --- MASTER UI RENDERING ENGINE ---
@@ -909,36 +915,18 @@ function render() {
         if (t[k]) el.placeholder = t[k];
     });
 
-    // Language Toggle Buttons
-    ['tr', 'en', 'de'].forEach(l => {
-        const btns = [
-            document.getElementById(`btnLang${l.toUpperCase()}`), 
-            document.getElementById(`lang-${l}`)
-        ];
-        btns.forEach(btn => {
-            if (btn) {
-                btn.className = (l === currentLang)
-                    ? "text-amber-600 font-black cursor-pointer transition px-1 underline"
-                    : "hover:text-amber-600 cursor-pointer transition px-1 opacity-70";
-            }
-        });
-    });
-
     const currSym = getCurrencySymbol();
-    
-    // Update both class-based and ID-based currency symbol elements across HTML versions
-    document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = currSym);
     const symbolEl = document.getElementById('currencySymbol');
     if (symbolEl) symbolEl.innerText = currSym;
 
     const indicatorEl = document.getElementById('viewModeIndicator');
     if (indicatorEl) {
         indicatorEl.innerHTML = currentTab ? 
-            `<span class="text-sm sm:text-base font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
-            `<span class="text-sm sm:text-base font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>`;
+            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
+            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>`;
     }
 
-    ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings', 'settingsBtn', 'shareBtn', 'deleteLedgerBtn'].forEach(id => {
+    ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings'].forEach(id => {
         document.getElementById(id)?.classList.toggle('hidden', !currentTab);
     });
 
@@ -952,7 +940,7 @@ function render() {
 
 function renderMembers() {
     const container = document.getElementById('memberList');
-    const saveBtn = document.getElementById('btnSaveMembers') || document.getElementById('saveMembersBtn');
+    const saveBtn = document.getElementById('btnSaveMembers');
     if (!container) return;
     
     container.innerHTML = ledgerData.members.length > 0 
@@ -976,7 +964,7 @@ function renderMembers() {
 function renderExpenseFormHeader() {
     const titleEl = document.getElementById('expenseFormTitle');
     const subEl = document.getElementById('expenseFormSub');
-    const actionsContainer = document.getElementById('expenseFormActions') || document.getElementById('expenseFormButtons');
+    const actionsContainer = document.getElementById('expenseFormActions');
     if (!titleEl || !subEl || !actionsContainer) return;
 
     const t = getTranslations();
@@ -1088,9 +1076,7 @@ window.copyShareLink = copyShareLink;
 window.goHome = goHome;
 window.deleteActiveLedger = deleteActiveLedger;
 window.addMemberDirect = addMemberDirect;
-window.stageMember = stageMember;
 window.saveMembers = saveMembers;
-window.saveStagedMembers = saveStagedMembers;
 window.deleteMember = deleteMember;
 window.addExpense = addExpense;
 window.startEditExpense = startEditExpense;
@@ -1099,13 +1085,10 @@ window.updateExpense = updateExpense;
 window.deleteExpenseFromEdit = deleteExpenseFromEdit;
 window.copySettlementSummary = copySettlementSummary;
 window.generateLedgerReport = generateLedgerReport;
-window.generateReport = generateReport;
 window.switchLanguage = switchLanguage;
 window.saveCardLayout = saveCardLayout;
-window.toggleSelectAll = toggleSelectAll;
 window.selectAllSplits = selectAllSplits;
 window.saveSettings = saveSettings;
-window.applyTheme = applyTheme;
 
 // --- INITIALIZE SYSTEM ENGINE ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -1115,9 +1098,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('expenseDate');
     if (dateInput) dateInput.value = formatToISODate(new Date());
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('ledger')) switchModalTab('recall');
-
     render();
+
+    // EAGER PRE-FETCHING: Pre-loads archives in the background immediately on page load
     loadGoogleSheetsArchive();
 });
