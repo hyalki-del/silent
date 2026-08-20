@@ -28,9 +28,9 @@
                     </div>
 
                     <div class="flex flex-col gap-2 flex-shrink-0">
-                        <button id="settingsBtn" type="button" onclick="window.openSettingsModal()" data-i18n="settingsBtn" class="hidden theme-btn text-xs px-3 py-1.5 font-bold cursor-pointer text-center">⚙ Settings</button>
-                        <button id="shareBtn" type="button" onclick="window.openShareModal()" data-i18n="shareLinkBtn" class="hidden theme-btn text-xs px-3 py-1.5 font-extrabold cursor-pointer text-center">Share Link</button>
-                        <button id="deleteLedgerBtn" type="button" onclick="window.deleteActiveLedger()" data-i18n="deleteBtn" class="hidden theme-btn text-xs bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 font-bold cursor-pointer text-center">Delete</button>
+                        <button id="btnOpenSettings" type="button" onclick="window.openSettingsModal()" data-i18n="settingsBtn" class="hidden theme-btn text-xs px-3 py-1.5 font-bold cursor-pointer text-center">⚙ Settings</button>
+                        <button id="btnOpenShare" type="button" onclick="window.openShareModal()" data-i18n="shareLinkBtn" class="hidden theme-btn text-xs px-3 py-1.5 font-extrabold cursor-pointer text-center">Share Link</button>
+                        <button id="btnDeleteLedger" type="button" onclick="window.deleteActiveLedger()" data-i18n="deleteBtn" class="hidden theme-btn text-xs bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 font-bold cursor-pointer text-center">Delete</button>
                     </div>
                 </div>
             </header>
@@ -45,8 +45,8 @@
                 
                 <div class="space-y-3">
                     <div class="flex gap-2">
-                        <input type="text" id="memberName" data-i18n-ph="namePlaceholder" placeholder="Name..." class="flex-1 theme-input px-3 py-2 text-sm" onkeypress="if(event.key==='Enter') window.stageMember()">
-                        <button id="btnAddMember" type="button" onclick="window.stageMember()" data-i18n="addBtn" class="theme-btn px-4 py-2 text-xs font-extrabold cursor-pointer">Add</button>
+                        <input type="text" id="memberName" data-i18n-ph="namePlaceholder" placeholder="Name..." class="flex-1 theme-input px-3 py-2 text-sm" onkeypress="if(event.key==='Enter') window.addMemberDirect()">
+                        <button id="btnAddMember" type="button" onclick="window.addMemberDirect()" data-i18n="addBtn" class="theme-btn px-4 py-2 text-xs font-extrabold cursor-pointer">Add</button>
                     </div>
 
                     <div id="memberList" class="text-sm flex flex-wrap gap-2 pt-1"></div>
@@ -87,7 +87,7 @@
                 <div class="space-y-2 pt-2 border-t border-current/10">
                     <div class="flex justify-between items-center">
                         <label data-i18n="splitBetweenLabel" class="text-[10px] font-black uppercase tracking-wider opacity-70">Split Between:</label>
-                        <button id="btnSelectAllSplits" type="button" onclick="window.toggleSelectAll(true)" data-i18n="selectAllBtn" class="text-xs font-bold opacity-80 hover:opacity-100 underline cursor-pointer">Select All</button>
+                        <button id="btnSelectAllSplits" type="button" onclick="window.selectAllSplits()" data-i18n="selectAllBtn" class="text-xs font-bold opacity-80 hover:opacity-100 underline cursor-pointer">Select All</button>
                     </div>
                     <div id="splitCheckboxes" class="flex flex-wrap gap-2 pt-1 text-xs"></div>
                 </div>
@@ -114,7 +114,6 @@
                     <div class="flex items-center gap-2">
                         <h2 data-i18n="historyTitle" class="text-xs font-black uppercase tracking-wider opacity-70">Ledger History</h2>
                     </div>
-                    <button id="btnGenerateReport" type="button" onclick="window.generateReport()" data-i18n="generateReportBtn" class="theme-btn text-xs px-3 py-1.5 font-extrabold cursor-pointer">Generate Report</button>
                 </div>
                 <ul id="expenseHistory" class="space-y-2 text-xs min-h-[80px] max-h-[300px] overflow-y-auto pr-1"></ul>
             </section>
@@ -229,7 +228,8 @@
         </div>
     </div>
 
-    <!-- App Controller Script -->
+    <!-- Scripts -->
+    <script src="js/i18n.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
