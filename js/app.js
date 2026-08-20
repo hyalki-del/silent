@@ -37,7 +37,7 @@ const TRANSLATIONS = {
         amountLabel: "Amount", paidByLabel: "Paid By", splitBetweenLabel: "Split Between:", selectAllBtn: "Select All", 
         recordExpenseBtn: "Record Expense", updateExpenseBtn: "Update Expense", cancelEditBtn: "Cancel", deleteExpenseBtn: "Delete Expense",
         settlementTitle: "Settlement Matrix", copySummaryBtn: "Copy Summary",
-        historyTitle: "Ledger History", generateReportBtn: "Generate Report",
+        historyTitle: "Ledger History", clickToEditSub: "(Click item to edit)", generateReportBtn: "Generate Report",
         modalSub: "Create or open a confidential group ledger.", tabCreate: "Create New", tabRecall: "Recall Existing",
         ledgerNameLabel: "Ledger Name", ledgerNamePh: "e.g. dinner-club", setPinLabel: "Set 4-Digit PIN", initializeBtn: "Initialize Ledger",
         selectArchiveLabel: "Select Archive", enterPinLabel: "Enter 4-Digit PIN", accessLedgerBtn: "Access Ledger",
@@ -58,7 +58,7 @@ const TRANSLATIONS = {
         amountLabel: "Tutar", paidByLabel: "Ödeyen", splitBetweenLabel: "Paylaşanlar:", selectAllBtn: "Tümünü Seç", 
         recordExpenseBtn: "Harcamayı Kaydet", updateExpenseBtn: "Harcamayı Güncelle", cancelEditBtn: "İptal", deleteExpenseBtn: "Harcamayı Sil",
         settlementTitle: "Ödeme Matrisi", copySummaryBtn: "Özeti Kopyala",
-        historyTitle: "Geçmiş Kayıtlar", generateReportBtn: "Rapor Oluştur",
+        historyTitle: "Geçmiş Kayıtlar", clickToEditSub: "(Düzenlemek için tıkla)", generateReportBtn: "Rapor Oluştur",
         modalSub: "Gizli bir grup defteri oluşturun veya açın.", tabCreate: "Yeni Oluştur", tabRecall: "Var Olanı Aç",
         ledgerNameLabel: "Defter Adı", ledgerNamePh: "ör. aksam-yemegi", setPinLabel: "4 Haneli PIN Belirleyin", initializeBtn: "Defteri Başlat",
         selectArchiveLabel: "Arşiv Seç", enterPinLabel: "4 Haneli PIN Girin", accessLedgerBtn: "Deftere Eriş",
@@ -79,7 +79,7 @@ const TRANSLATIONS = {
         amountLabel: "Betrag", paidByLabel: "Bezahlt von", splitBetweenLabel: "Aufteilen:", selectAllBtn: "Alle", 
         recordExpenseBtn: "Speichern", updateExpenseBtn: "Aktualisieren", cancelEditBtn: "Abbrechen", deleteExpenseBtn: "Löschen",
         settlementTitle: "Abrechnungsmatrix", copySummaryBtn: "Kopieren",
-        historyTitle: "Verlauf", generateReportBtn: "Bericht Erstellen",
+        historyTitle: "Verlauf", clickToEditSub: "(Zum Bearbeiten anklicken)", generateReportBtn: "Bericht Erstellen",
         modalSub: "Gruppenbuch öffnen.", tabCreate: "Neu", tabRecall: "Öffnen",
         ledgerNameLabel: "Name", ledgerNamePh: "z.B. club", setPinLabel: "PIN", initializeBtn: "Starten",
         selectArchiveLabel: "Archiv Wählen", enterPinLabel: "PIN Eingeben", accessLedgerBtn: "Zugreifen",
@@ -249,7 +249,7 @@ function initTaglineCarousel() {
         const activeTaglines = t.taglines;
 
         spot.className = "w-full text-center leading-snug";
-        void spot.offsetWidth; // Synchronous DOM reflow force
+        void spot.offsetWidth;
 
         spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
 
@@ -342,7 +342,7 @@ async function saveCardLayout() {
     const res = await callBackend('updateSettings', { cardOrder: newOrder });
     if (res && res.status === "success") {
         document.getElementById('layoutActionBar')?.classList.add('hidden');
-        alert("Layout saved successfully to Google Sheet!");
+        alert("Layout saved successfully!");
     } else {
         alert("Failed to save layout: " + (res?.message || "Unknown error"));
     }
@@ -645,14 +645,14 @@ async function deleteMember(name, event) {
     }
 }
 
-// --- EXPENSE EDITING ENGINE (RESOLVED DOM LIFECYCLE ORDER & CASE MATCHING) ---
+// --- EXPENSE EDITING ENGINE ---
 function startEditExpense(id) {
     const exp = ledgerData.expenses.find(e => e.id.toString() === id.toString());
     if (!exp) return;
 
     editingExpenseId = id.toString();
 
-    // 1. Re-render UI first to mount dropdown options and update action buttons
+    // 1. Re-render UI first to mount dropdown options
     render();
 
     // 2. Fetch DOM input handles AFTER render cycle
@@ -796,7 +796,7 @@ async function addExpense() {
     await callBackend('addExpense', { id, date, category, desc, amount, paidBy, splitWith });
 }
 
-// --- CASE-INSENSITIVE SETTLEMENT COMPUTATION ALGORITHM ---
+// --- SETTLEMENT COMPUTATION ALGORITHM ---
 function calculateSettlement() {
     const balances = {};
     const lowerMap = {};
@@ -864,17 +864,22 @@ function copySettlementSummary() {
         `\n================================`;
 
     navigator.clipboard.writeText(summaryText).then(() => {
-        alert("Settlement summary copied to clipboard as plain text!");
+        alert("Settlement summary copied to clipboard!");
     }).catch(err => {
         console.error("Copy failed:", err);
         alert("Failed to copy automatically. Summary:\n\n" + summaryText);
     });
 }
 
-// --- REPORT GENERATOR (NEW TAB RENDERER) ---
+// --- REPORT GENERATOR ENGINE ---
 function generateLedgerReport() {
     if (!currentTab) {
-        alert("Please open an active ledger first.");
+        alert("Please create or recall a ledger first to generate a report.");
+        const modal = document.getElementById('welcomeModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.scrollIntoView({ behavior: 'smooth' });
+        }
         return;
     }
 
@@ -920,7 +925,7 @@ function generateLedgerReport() {
     const reportWindow = window.open(reportUrl, '_blank');
 
     if (!reportWindow) {
-        alert("Pop-up blocked! Please allow pop-ups for this site to view the report in a new tab.");
+        alert("Pop-up blocked! Please allow pop-ups for this site to view the report.");
     }
 }
 
