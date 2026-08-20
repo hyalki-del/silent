@@ -1,14 +1,14 @@
 /**
  * ==========================================================================
- * SPENSE - Group Expense Tracker Master Controller
- * CS Senior Architecture: Full Multi-Language Routing, Dynamic Tagline Engine,
- *                        Full CRUD State Machine & Multi-DOM Contract Resolver
+ * SPENSE - Group Expense Tracker Main Controller
+ * CS Senior Architecture: Modular State Machine + Tagline Engine Restoration 
+ *                        + Pristine Backend Routing Compatibility
  * ==========================================================================
  */
 
-console.log("%c[SPENSE] Master Controller Active.", "color: #059669; font-weight: bold;");
+console.log("%c[SPENSE] Engine & Controller Loaded Successfully.", "color: #059669; font-weight: bold;");
 
-// --- GLOBAL STATE MACHINE ---
+// --- Global Application State ---
 let currentTab = null;
 let currentPin = null;
 let currentLang = 'en';
@@ -16,131 +16,83 @@ let currentCurrency = 'USD';
 let currentTheme = 'Silk';
 let ledgerData = { members: [], expenses: [] };
 
-// Archive Caching State for Eager Pre-fetching
-let cachedArchives = null;
-let isFetchingArchives = false;
-
-// Settings Staging State
+// Settings Modal Staging State
 let selectedModalLang = 'en';
 let selectedModalCurrency = 'USD';
 let selectedModalTheme = 'Silk';
 
-// Form Staging & Edit State Variables
+// Staging & Edit State Variables
 let unsavedMembers = [];
 let editingExpenseId = null;
 
-// --- SAFE TRANSLATION DICTIONARY RESOLVER ---
-// Safely reads translation dictionaries without duplicate 'const TRANSLATIONS' syntax crashes
-function getTranslations() {
-    if (typeof window.TRANSLATIONS !== 'undefined' && window.TRANSLATIONS[currentLang]) {
-        return window.TRANSLATIONS[currentLang];
+// --- Internationalization Dictionary ---
+const TRANSLATIONS = {
+    en: {
+        settingsBtn: "⚙ Settings", shareLinkBtn: "Share Link", deleteBtn: "Delete",
+        participantsTitle: "Participants", participantsSub: "Add or remove people from this group.",
+        namePlaceholder: "Name...", addBtn: "Add", saveMembersBtn: "Save Participants",
+        newExpenseTitle: "New Expense", editExpenseTitle: "Edit Expense",
+        newExpenseSub: "Log a transaction to split.", editExpenseSub: "Modify or delete this expense.",
+        dateLabel: "Date", categoryLabel: "Category", descLabel: "Description", descPlaceholder: "e.g. Dinner",
+        amountLabel: "Amount", paidByLabel: "Paid By", splitBetweenLabel: "Split Between:", selectAllBtn: "Select All", 
+        recordExpenseBtn: "Record Expense", updateExpenseBtn: "Update Expense", cancelEditBtn: "Cancel", deleteExpenseBtn: "Delete Expense",
+        settlementTitle: "Settlement Matrix", copySummaryBtn: "Copy Summary",
+        historyTitle: "Ledger History", generateReportBtn: "Generate Report",
+        modalSub: "Create or open a confidential group ledger.", tabCreate: "Create New", tabRecall: "Recall Existing",
+        ledgerNameLabel: "Ledger Name", ledgerNamePh: "e.g. dinner-club", setPinLabel: "Set 4-Digit PIN", initializeBtn: "Initialize Ledger",
+        selectArchiveLabel: "Select Archive", enterPinLabel: "Enter 4-Digit PIN", accessLedgerBtn: "Access Ledger",
+        shareLinkHeader: "Share Ledger Link", shareLinkSub: "Anyone with this link will only need to enter PIN.", copyBtn: "Copy",
+        taglines: [
+            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Spend simply.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Enjoy the moment. Leave tracking to SPENSE.</span>`,
+            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Just add what you spent.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Who paid? Who shares? SPENSE does the math.</span>`,
+            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Settle easily.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">See who owes whom — and how much.</span>`
+        ]
+    },
+    tr: {
+        settingsBtn: "⚙ Ayarlar", shareLinkBtn: "Bağlantıyı Paylaş", deleteBtn: "Sil",
+        participantsTitle: "Katılımcılar", participantsSub: "Bu gruba kişi ekleyin veya çıkarın.",
+        namePlaceholder: "İsim...", addBtn: "Ekle", saveMembersBtn: "Katılımcıları Kaydet",
+        newExpenseTitle: "Yeni Harcama", editExpenseTitle: "Harcamayı Düzenle",
+        newExpenseSub: "Bölüştürmek için işlem kaydedin.", editExpenseSub: "Bu harcamayı güncelleyin veya silin.",
+        dateLabel: "Tarih", categoryLabel: "Kategori", descLabel: "Açıklama", descPlaceholder: "ör. Akşam Yemeği",
+        amountLabel: "Tutar", paidByLabel: "Ödeyen", splitBetweenLabel: "Paylaşanlar:", selectAllBtn: "Tümünü Seç", 
+        recordExpenseBtn: "Harcamayı Kaydet", updateExpenseBtn: "Harcamayı Güncelle", cancelEditBtn: "İptal", deleteExpenseBtn: "Harcamayı Sil",
+        settlementTitle: "Ödeme Matrisi", copySummaryBtn: "Özeti Kopyala",
+        historyTitle: "Geçmiş Kayıtlar", generateReportBtn: "Rapor Oluştur",
+        modalSub: "Gizli bir grup defteri oluşturun veya açın.", tabCreate: "Yeni Oluştur", tabRecall: "Var Olanı Aç",
+        ledgerNameLabel: "Defter Adı", ledgerNamePh: "ör. aksam-yemegi", setPinLabel: "4 Haneli PIN Belirleyin", initializeBtn: "Defteri Başlat",
+        selectArchiveLabel: "Arşiv Seç", enterPinLabel: "4 Haneli PIN Girin", accessLedgerBtn: "Deftere Eriş",
+        shareLinkHeader: "Defter Bağlantısını Paylaş", shareLinkSub: "Bu bağlantıya sahip herkes PIN girmelidir.", copyBtn: "Kopyala",
+        taglines: [
+            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Kolayca harca.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Anın tadını çıkar. Takibi SPENSE'e bırak.</span>`,
+            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Sadece harcamanı ekle.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kim ödedi? Kimler paylaşıyor? Matematik işini SPENSE yapar.</span>`,
+            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Rahatça hesabı kapat.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kimin kime borcu var — anında gör.</span>`
+        ]
+    },
+    de: {
+        settingsBtn: "⚙ Einstellungen", shareLinkBtn: "Link Teilen", deleteBtn: "Löschen",
+        participantsTitle: "Teilnehmer", participantsSub: "Personen hinzufügen oder entfernen.",
+        namePlaceholder: "Name...", addBtn: "Hinzufügen", saveMembersBtn: "Teilnehmer Speichern",
+        newExpenseTitle: "Neue Ausgabe", editExpenseTitle: "Ausgabe Bearbeiten",
+        newExpenseSub: "Transaktion eintragen.", editExpenseSub: "Ändern oder löschen Sie diese Ausgabe.",
+        dateLabel: "Datum", categoryLabel: "Kategorie", descLabel: "Beschreibung", descPlaceholder: "z.B. Abendessen",
+        amountLabel: "Betrag", paidByLabel: "Bezahlt von", splitBetweenLabel: "Aufteilen:", selectAllBtn: "Alle", 
+        recordExpenseBtn: "Speichern", updateExpenseBtn: "Aktualisieren", cancelEditBtn: "Abbrechen", deleteExpenseBtn: "Löschen",
+        settlementTitle: "Abrechnungsmatrix", copySummaryBtn: "Kopieren",
+        historyTitle: "Verlauf", generateReportBtn: "Bericht Erstellen",
+        modalSub: "Gruppenbuch öffnen.", tabCreate: "Neu", tabRecall: "Öffnen",
+        ledgerNameLabel: "Name", ledgerNamePh: "z.B. club", setPinLabel: "PIN", initializeBtn: "Starten",
+        selectArchiveLabel: "Archiv Wählen", enterPinLabel: "PIN Eingeben", accessLedgerBtn: "Zugreifen",
+        shareLinkHeader: "Teilen", shareLinkSub: "PIN erforderlich.", copyBtn: "Kopieren",
+        taglines: [
+            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach ausgeben.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Genieße den Moment. Überlasse die Nachverfolgung SPENSE.</span>`,
+            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach eintragen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Wer hat bezahlt? Wer teilt es? SPENSE macht die Rechnung.</span>`,
+            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach abrechnen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Sehen Sie wer wem schuldet — und wie viel.</span>`
+        ]
     }
-    if (typeof TRANSLATIONS !== 'undefined' && TRANSLATIONS[currentLang]) {
-        return TRANSLATIONS[currentLang];
-    }
-    return {};
-}
+};
 
-// --- NETWORK & CONFIGURATION ROUTER ---
-async function getConfig() {
-    try {
-        const configRes = await fetch('config.json');
-        if (!configRes.ok) throw new Error("config.json missing");
-        const config = await configRes.json();
-        return config.sheetUrl || config.googleSheetApiUrl || config.apiUrl;
-    } catch (err) {
-        console.warn("[SPENSE Config Notice]", err.message);
-        return null;
-    }
-}
-
-async function callBackend(action, payload = {}) {
-    try {
-        const sheetUrl = await getConfig();
-        if (!sheetUrl) return { status: "error", message: "Missing config.json sheetUrl" };
-
-        const response = await fetch(sheetUrl, {
-            method: 'POST',
-            body: JSON.stringify({ action, tab: currentTab, pin: currentPin, ...payload })
-        });
-        return await response.json();
-    } catch (err) {
-        console.error("Backend communication error:", err);
-        return { status: "error", message: err.toString() };
-    }
-}
-
-// --- EAGER PRE-FETCHING ARCHIVE ENGINE ---
-async function loadGoogleSheetsArchive() {
-    const select = document.getElementById('archiveSelect');
-
-    if (cachedArchives && select) {
-        renderArchiveDropdown(select, cachedArchives);
-        return;
-    }
-
-    if (isFetchingArchives) return;
-    isFetchingArchives = true;
-
-    if (select && select.options.length <= 1) {
-        select.innerHTML = `<option value="">-- Reading Google Sheets... --</option>`;
-    }
-
-    try {
-        const sheetUrl = await getConfig();
-        if (!sheetUrl) {
-            if (select) select.innerHTML = `<option value="">-- Missing sheetUrl in config.json --</option>`;
-            isFetchingArchives = false;
-            return;
-        }
-
-        const res = await fetch(sheetUrl);
-        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-        
-        const rawData = await res.json();
-        let ledgers = [];
-        
-        if (Array.isArray(rawData)) {
-            ledgers = rawData;
-        } else if (typeof rawData === 'object' && rawData !== null) {
-            ledgers = rawData.archives || rawData.sheets || rawData.ledgers || Object.keys(rawData);
-        }
-
-        cachedArchives = ledgers
-            .filter(Boolean)
-            .filter(name => name.toString().trim().toLowerCase() !== 'metadata' && name.toString().trim().toLowerCase() !== 'counter');
-
-        if (select) {
-            renderArchiveDropdown(select, cachedArchives);
-        }
-
-    } catch (error) {
-        console.error("Archive pre-fetch error:", error);
-        if (select) select.innerHTML = `<option value="">-- Error loading archives --</option>`;
-    } finally {
-        isFetchingArchives = false;
-    }
-}
-
-function renderArchiveDropdown(selectElement, ledgersArray) {
-    if (!selectElement) return;
-
-    if (!ledgersArray || ledgersArray.length === 0) {
-        selectElement.innerHTML = `<option value="">-- No archives found --</option>`;
-        return;
-    }
-
-    selectElement.innerHTML = `<option value="">-- Select a Ledger Tab --</option>` + 
-        ledgersArray.map(name => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedLedger = urlParams.get('ledger');
-    if (sharedLedger && ledgersArray.includes(sharedLedger)) {
-        selectElement.value = sharedLedger;
-    }
-}
-
-// --- DETERMINISTIC DATE & NAME NORMALIZERS ---
+// --- DETERMINISTIC DATE NORMALIZATION HELPER ---
 function formatToISODate(rawDate) {
     if (!rawDate) {
         const today = new Date();
@@ -184,35 +136,24 @@ function formatToISODate(rawDate) {
     return `${fallback.getFullYear()}-${String(fallback.getMonth() + 1).padStart(2, '0')}-${String(fallback.getDate()).padStart(2, '0')}`;
 }
 
+// Case-Insensitive Canonical Name Matcher
 function findMemberCanonical(targetName) {
     if (!targetName) return targetName;
     const match = ledgerData.members.find(m => m.toLowerCase() === targetName.toLowerCase());
     return match || targetName;
 }
 
-function escapeHTML(str) {
-    if (!str) return '';
-    return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-}
-
-function getCurrencySymbol() {
-    return currentCurrency === 'EUR' ? '€' : currentCurrency === 'TRY' ? '₺' : '$';
-}
-
-function applyTheme(themeName) {
-    currentTheme = themeName;
-    document.documentElement.setAttribute('data-theme', themeName.toLowerCase());
-}
-
-// --- SETTINGS SELECTION CONTROLLER ---
+// --- SETTINGS SELECTION ENGINE ---
 function selectSettingsLang(lang) {
     selectedModalLang = lang;
     ['tr', 'en', 'de'].forEach(l => {
         const btn = document.getElementById(`setLang${l.toUpperCase()}`);
         if (btn) {
-            btn.className = (l === lang)
-                ? "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected"
-                : "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
+            if (l === lang) {
+                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected";
+            } else {
+                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
+            }
         }
     });
 }
@@ -222,24 +163,33 @@ function selectSettingsCurrency(curr) {
     ['USD', 'EUR', 'TRY'].forEach(c => {
         const btn = document.getElementById(`setCurr${c}`);
         if (btn) {
-            btn.className = (c === curr)
-                ? "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected"
-                : "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
+            if (c === curr) {
+                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected";
+            } else {
+                btn.className = "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
+            }
         }
     });
 }
 
 function selectSettingsTheme(theme) {
     selectedModalTheme = theme;
-    const themeStyles = { Silk: 'bg-slate-50 text-slate-900', Toon: 'bg-amber-100 text-slate-900', Neon: 'bg-slate-950 text-cyan-400' };
+    
+    const themeStyles = {
+        Silk: 'bg-slate-50 text-slate-900',
+        Toon: 'bg-amber-100 text-slate-900',
+        Neon: 'bg-slate-950 text-cyan-400'
+    };
 
     ['Silk', 'Toon', 'Neon'].forEach(t => {
         const btn = document.getElementById(`setTheme${t}`);
         if (btn) {
             const baseBg = themeStyles[t] || 'bg-slate-50';
-            btn.className = (t === theme)
-                ? `theme-btn py-3 px-2 ${baseBg} rounded-xl text-center transition cursor-pointer option-btn-selected`
-                : `theme-btn py-3 px-2 border-2 border-slate-200 ${baseBg} rounded-xl text-center transition cursor-pointer opacity-50`;
+            if (t === theme) {
+                btn.className = `theme-btn py-3 px-2 ${baseBg} rounded-xl text-center transition cursor-pointer option-btn-selected`;
+            } else {
+                btn.className = `theme-btn py-3 px-2 border-2 border-slate-200 ${baseBg} rounded-xl text-center transition cursor-pointer opacity-50`;
+            }
         }
     });
 }
@@ -270,11 +220,19 @@ async function saveSettings() {
     initTaglineCarousel();
 
     if (currentTab) {
-        await callBackend('updateSettings', { language: currentLang, currency: currentCurrency, theme: currentTheme });
+        const res = await callBackend('updateSettings', {
+            language: currentLang,
+            currency: currentCurrency,
+            theme: currentTheme
+        });
+
+        if (res && res.status !== "success") {
+            console.warn("[SPENSE Warning] Backend settings save notice:", res?.message);
+        }
     }
 }
 
-// --- DYNAMIC TAGLINE CAROUSEL ENGINE ---
+// --- GUARANTEED 4-DIRECTIONAL KEYFRAME TAGLINE ENGINE ---
 let taglineTimer = null;
 let currentTaglineIndex = 0;
 
@@ -287,12 +245,11 @@ function initTaglineCarousel() {
     const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
 
     function cycleTagline() {
-        const t = getTranslations();
-        const activeTaglines = t.taglines || [];
-        if (activeTaglines.length === 0) return;
+        const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+        const activeTaglines = t.taglines;
 
         spot.className = "w-full text-center leading-snug";
-        void spot.offsetWidth; // Force synchronous reflow to re-trigger CSS animation
+        void spot.offsetWidth; // Synchronous DOM reflow force
 
         spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
 
@@ -304,12 +261,6 @@ function initTaglineCarousel() {
 
     cycleTagline();
     taglineTimer = setInterval(cycleTagline, 3200);
-}
-
-function switchLanguage(lang) {
-    currentLang = lang;
-    render();
-    initTaglineCarousel();
 }
 
 // --- CARD REORDERING DRAG ENGINE ---
@@ -391,13 +342,88 @@ async function saveCardLayout() {
     const res = await callBackend('updateSettings', { cardOrder: newOrder });
     if (res && res.status === "success") {
         document.getElementById('layoutActionBar')?.classList.add('hidden');
-        alert("Layout saved successfully!");
+        alert("Layout saved successfully to Google Sheet!");
     } else {
         alert("Failed to save layout: " + (res?.message || "Unknown error"));
     }
 }
 
-// --- WELCOME & RECALL CONTROLLER ---
+// --- GOOGLE SHEETS CONNECTOR ---
+async function getConfig() {
+    try {
+        const configRes = await fetch('config.json');
+        if (!configRes.ok) throw new Error("config.json missing");
+        const config = await configRes.json();
+        return config.sheetUrl || config.googleSheetApiUrl || config.apiUrl;
+    } catch (err) {
+        console.warn("[SPENSE Config Notice]", err.message);
+        return null;
+    }
+}
+
+async function callBackend(action, payload = {}) {
+    try {
+        const sheetUrl = await getConfig();
+        if (!sheetUrl) return { status: "error", message: "Missing config.json sheetUrl" };
+
+        const response = await fetch(sheetUrl, {
+            method: 'POST',
+            body: JSON.stringify({ action, tab: currentTab, pin: currentPin, ...payload })
+        });
+        return await response.json();
+    } catch (err) {
+        console.error("Backend error:", err);
+        return { status: "error", message: err.toString() };
+    }
+}
+
+// --- ARCHIVE LOADER WITH METADATA EXCLUSION ---
+async function loadGoogleSheetsArchive() {
+    const select = document.getElementById('archiveSelect');
+    if (!select) return;
+
+    if (select.options.length <= 1) {
+        select.innerHTML = `<option value="">-- Reading Google Sheets... --</option>`;
+    }
+
+    try {
+        const sheetUrl = await getConfig();
+        if (!sheetUrl) {
+            select.innerHTML = `<option value="">-- Missing sheetUrl in config.json --</option>`;
+            return;
+        }
+
+        const res = await fetch(sheetUrl);
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+        
+        const rawData = await res.json();
+        let ledgers = [];
+        
+        if (Array.isArray(rawData)) {
+            ledgers = rawData;
+        } else if (typeof rawData === 'object' && rawData !== null) {
+            ledgers = rawData.archives || rawData.sheets || rawData.ledgers || Object.keys(rawData);
+        }
+
+        ledgers = ledgers
+            .filter(Boolean)
+            .filter(name => name.toString().trim().toLowerCase() !== 'metadata');
+
+        if (ledgers.length === 0) {
+            select.innerHTML = `<option value="">-- No archives found --</option>`;
+            return;
+        }
+
+        select.innerHTML = `<option value="">-- Select a Ledger Tab --</option>` + 
+            ledgers.map(name => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
+
+    } catch (error) {
+        console.error("Archive fetch error:", error);
+        select.innerHTML = `<option value="">-- Error loading archives --</option>`;
+    }
+}
+
+// --- WELCOME MODAL CORE NAVIGATION ---
 function switchModalTab(tabMode) {
     const createSec = document.getElementById('createSection');
     const recallSec = document.getElementById('recallSection');
@@ -418,9 +444,7 @@ function switchModalTab(tabMode) {
         if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer";
         
         const select = document.getElementById('archiveSelect');
-        if (cachedArchives && select) {
-            renderArchiveDropdown(select, cachedArchives);
-        } else {
+        if (select && (select.options.length <= 1 || select.value === "")) {
             loadGoogleSheetsArchive();
         }
     }
@@ -524,9 +548,7 @@ function openShareModal() {
     const input = document.getElementById('shareLinkInput');
     if (input && currentTab) input.value = `${window.location.origin}${window.location.pathname}?ledger=${encodeURIComponent(currentTab)}`;
 }
-
 function closeShareModal() { document.getElementById('shareModal')?.classList.add('hidden'); }
-
 function copyShareLink() {
     const input = document.getElementById('shareLinkInput');
     if (input) { input.select(); navigator.clipboard.writeText(input.value); alert("Copied share link!"); }
@@ -549,7 +571,7 @@ async function deleteActiveLedger() {
     goHome();
 }
 
-// --- PARTICIPANTS MANAGEMENT ---
+// --- PARTICIPANTS STAGING & AUTO-PERSIST MODULE ---
 async function addMemberDirect() {
     const input = document.getElementById('memberName');
     if (!input) return;
@@ -576,20 +598,22 @@ async function addMemberDirect() {
     if (res && res.status === "success") {
         unsavedMembers = unsavedMembers.filter(m => m !== name);
         render();
+    } else {
+        console.warn("[SPENSE Warning] Background sync failed for participant:", name);
     }
 }
 
 async function saveMembers() {
     if (unsavedMembers.length === 0) return;
 
-    const btn = document.getElementById('btnSaveMembers') || document.getElementById('saveMembersBtn');
+    const btn = document.getElementById('btnSaveMembers');
     if (btn) btn.innerText = "Saving...";
 
     const res = await callBackend('addMembers', { names: unsavedMembers });
     if (res && res.status === "success") {
         unsavedMembers = [];
         render();
-        alert("Participants saved!");
+        alert("Participants saved to sheet!");
     } else {
         alert("Failed to save participants: " + (res?.message || "Error"));
         render();
@@ -603,27 +627,35 @@ async function deleteMember(name, event) {
     }
 
     if (!name) return;
+    
     const canonicalName = findMemberCanonical(name);
 
     if (!confirm(`Are you sure you want to remove participant '${canonicalName}'?`)) return;
 
     const targetLower = canonicalName.toLowerCase();
+    
     ledgerData.members = ledgerData.members.filter(m => m.toLowerCase() !== targetLower);
     unsavedMembers = unsavedMembers.filter(m => m.toLowerCase() !== targetLower);
 
     render();
-    await callBackend('removeMember', { name: canonicalName });
+
+    const res = await callBackend('removeMember', { name: canonicalName });
+    if (res && res.status !== "success") {
+        console.warn("[SPENSE Notice] Backend deletion notice:", res?.message);
+    }
 }
 
-// --- EXPENSE EDITING ENGINE ---
+// --- EXPENSE EDITING ENGINE (RESOLVED DOM LIFECYCLE ORDER & CASE MATCHING) ---
 function startEditExpense(id) {
-    if (!id) return;
     const exp = ledgerData.expenses.find(e => e.id.toString() === id.toString());
     if (!exp) return;
 
     editingExpenseId = id.toString();
 
-    // Populate Input Fields in the Expense Form
+    // 1. Re-render UI first to mount dropdown options and update action buttons
+    render();
+
+    // 2. Fetch DOM input handles AFTER render cycle
     const dateInput = document.getElementById('expenseDate');
     const descInput = document.getElementById('expenseDesc');
     const amountInput = document.getElementById('expenseAmount');
@@ -634,15 +666,32 @@ function startEditExpense(id) {
     if (descInput) descInput.value = exp.desc || '';
     if (amountInput) amountInput.value = exp.amount || '';
     if (catInput) catInput.value = exp.category || 'Food & Drink';
-    if (paidByInput) paidByInput.value = findMemberCanonical(exp.paidBy) || '';
 
-    // Re-check corresponding split checkboxes
+    // 3. Case-Insensitive Select Option Alignment Strategy
+    if (paidByInput && exp.paidBy) {
+        const targetPayer = findMemberCanonical(exp.paidBy).toLowerCase();
+        let matchedIndex = -1;
+
+        for (let i = 0; i < paidByInput.options.length; i++) {
+            if (paidByInput.options[i].value.toLowerCase() === targetPayer) {
+                matchedIndex = i;
+                break;
+            }
+        }
+
+        if (matchedIndex !== -1) {
+            paidByInput.selectedIndex = matchedIndex;
+        } else if (paidByInput.options.length > 0) {
+            paidByInput.value = findMemberCanonical(exp.paidBy);
+        }
+    }
+
+    // 4. Update Split Checkboxes
     const splitArr = (Array.isArray(exp.splitWith) ? exp.splitWith : (exp.splitBetween || [])).map(s => s.toLowerCase());
     document.querySelectorAll('.split-checkbox').forEach(cb => {
         cb.checked = splitArr.includes(cb.value.toLowerCase());
     });
 
-    render();
     document.getElementById('expenseFormSection')?.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -747,7 +796,7 @@ async function addExpense() {
     await callBackend('addExpense', { id, date, category, desc, amount, paidBy, splitWith });
 }
 
-// --- SETTLEMENT MATRIX CALCULATOR ---
+// --- CASE-INSENSITIVE SETTLEMENT COMPUTATION ALGORITHM ---
 function calculateSettlement() {
     const balances = {};
     const lowerMap = {};
@@ -768,10 +817,14 @@ function calculateSettlement() {
         const share = amt / splitList.length;
         const payerKey = (e.paidBy || '').toLowerCase();
 
-        if (balances[payerKey] !== undefined) balances[payerKey] += amt;
+        if (balances[payerKey] !== undefined) {
+            balances[payerKey] += amt;
+        }
 
         splitList.forEach(mKey => {
-            if (balances[mKey] !== undefined) balances[mKey] -= share;
+            if (balances[mKey] !== undefined) {
+                balances[mKey] -= share;
+            }
         });
     });
 
@@ -811,13 +864,14 @@ function copySettlementSummary() {
         `\n================================`;
 
     navigator.clipboard.writeText(summaryText).then(() => {
-        alert("Settlement summary copied to clipboard!");
+        alert("Settlement summary copied to clipboard as plain text!");
     }).catch(err => {
-        alert("Summary:\n\n" + summaryText);
+        console.error("Copy failed:", err);
+        alert("Failed to copy automatically. Summary:\n\n" + summaryText);
     });
 }
 
-// --- REPORT GENERATOR ---
+// --- REPORT GENERATOR (NEW TAB RENDERER) ---
 function generateLedgerReport() {
     if (!currentTab) {
         alert("Please open an active ledger first.");
@@ -866,8 +920,23 @@ function generateLedgerReport() {
     const reportWindow = window.open(reportUrl, '_blank');
 
     if (!reportWindow) {
-        alert("Pop-up blocked! Please allow pop-ups for this site to view the report.");
+        alert("Pop-up blocked! Please allow pop-ups for this site to view the report in a new tab.");
     }
+}
+
+function getCurrencySymbol() {
+    return currentCurrency === 'EUR' ? '€' : currentCurrency === 'TRY' ? '₺' : '$';
+}
+
+function applyTheme(themeName) {
+    currentTheme = themeName;
+    document.documentElement.setAttribute('data-theme', themeName.toLowerCase());
+}
+
+function switchLanguage(lang) {
+    currentLang = lang;
+    render();
+    initTaglineCarousel();
 }
 
 function selectAllSplits() {
@@ -876,7 +945,7 @@ function selectAllSplits() {
 
 // --- MASTER UI RENDERING ENGINE ---
 function render() {
-    const t = getTranslations();
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const k = el.getAttribute('data-i18n');
@@ -889,7 +958,6 @@ function render() {
     });
 
     const currSym = getCurrencySymbol();
-    document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = currSym);
     const symbolEl = document.getElementById('currencySymbol');
     if (symbolEl) symbolEl.innerText = currSym;
 
@@ -900,7 +968,6 @@ function render() {
             `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>`;
     }
 
-    // Toggle header buttons (supports all HTML DOM variants)
     ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings', 'settingsBtn', 'shareBtn', 'deleteLedgerBtn'].forEach(id => {
         document.getElementById(id)?.classList.toggle('hidden', !currentTab);
     });
@@ -939,30 +1006,26 @@ function renderMembers() {
 function renderExpenseFormHeader() {
     const titleEl = document.getElementById('expenseFormTitle');
     const subEl = document.getElementById('expenseFormSub');
-    
-    // Multi-DOM Target Resolver: Connects both 'expenseFormActions' and 'expenseFormButtons' IDs
     const actionsContainer = document.getElementById('expenseFormActions') || document.getElementById('expenseFormButtons');
     if (!titleEl || !subEl || !actionsContainer) return;
 
-    const t = getTranslations();
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
 
     if (editingExpenseId) {
-        titleEl.innerText = t.editExpenseTitle || "Edit Expense";
-        subEl.innerText = t.editExpenseSub || "Modify or delete this expense.";
-        
-        // Dynamically replaces the form button block with Delete, Cancel, and Update
+        titleEl.innerText = t.editExpenseTitle;
+        subEl.innerText = t.editExpenseSub;
         actionsContainer.innerHTML = `
             <div class="grid grid-cols-3 gap-2">
-                <button type="button" onclick="window.deleteExpenseFromEdit()" class="theme-btn bg-rose-500 hover:bg-rose-600 text-white py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.deleteExpenseBtn || "Delete"}</button>
-                <button type="button" onclick="window.cancelEditExpense()" class="theme-btn bg-slate-200 hover:bg-slate-300 text-slate-800 py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.cancelEditBtn || "Cancel"}</button>
-                <button type="button" onclick="window.updateExpense()" class="theme-btn bg-emerald-400 hover:bg-emerald-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.updateExpenseBtn || "Update Expense"}</button>
+                <button type="button" onclick="window.deleteExpenseFromEdit()" class="theme-btn bg-rose-500 hover:bg-rose-600 text-white py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.deleteExpenseBtn}</button>
+                <button type="button" onclick="window.cancelEditExpense()" class="theme-btn bg-slate-200 hover:bg-slate-300 text-slate-800 py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.cancelEditBtn}</button>
+                <button type="button" onclick="window.updateExpense()" class="theme-btn bg-emerald-400 hover:bg-emerald-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.updateExpenseBtn}</button>
             </div>
         `;
     } else {
-        titleEl.innerText = t.newExpenseTitle || "New Expense";
-        subEl.innerText = t.newExpenseSub || "Log a transaction to split.";
+        titleEl.innerText = t.newExpenseTitle;
+        subEl.innerText = t.newExpenseSub;
         actionsContainer.innerHTML = `
-            <button id="btnRecordExpense" type="button" onclick="window.addExpense()" data-i18n="recordExpenseBtn" class="w-full theme-btn py-3 text-sm font-extrabold cursor-pointer rounded-xl">${t.recordExpenseBtn || "Record Expense"}</button>
+            <button id="btnRecordExpense" type="button" onclick="window.addExpense()" data-i18n="recordExpenseBtn" class="w-full theme-btn py-3 text-sm font-extrabold cursor-pointer rounded-xl">${t.recordExpenseBtn}</button>
         `;
     }
 }
@@ -1005,14 +1068,14 @@ function renderHistory() {
             const displaySplits = rawSplits.map(s => findMemberCanonical(s)).join(', ');
 
             return `
-            <li class="p-2.5 rounded-xl border border-current/15 flex justify-between items-center bg-current/5 gap-2 cursor-pointer hover:bg-current/10" data-id="${e.id}" onclick="window.startEditExpense(this.getAttribute('data-id'))">
+            <li class="p-2.5 rounded-xl border border-current/15 flex justify-between items-center bg-current/5 gap-2">
                 <div class="flex-1 min-w-0">
                     <span class="font-bold truncate block">${escapeHTML(e.desc)} (${escapeHTML(e.category)})</span>
                     <div class="text-[10px] opacity-70">Paid by <span class="font-bold">${escapeHTML(canonicalPayer)}</span> • ${displayDate} • Split: ${escapeHTML(displaySplits)}</div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <span class="font-extrabold text-sm">${getCurrencySymbol()}${parseFloat(e.amount).toFixed(2)}</span>
-                    <button type="button" data-id="${e.id}" onclick="event.stopPropagation(); window.startEditExpense(this.getAttribute('data-id'))" class="theme-btn px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-300 text-slate-900 cursor-pointer hover:bg-amber-400">Edit</button>
+                    <button type="button" data-id="${e.id}" onclick="window.startEditExpense(this.getAttribute('data-id'))" class="theme-btn px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-300 text-slate-900 cursor-pointer hover:bg-amber-400">Edit</button>
                 </div>
             </li>
         `;
@@ -1035,7 +1098,12 @@ function renderSettlement() {
         : '<p class="font-bold text-center py-2 text-emerald-600">All balances are currently settled!</p>';
 }
 
-// --- GLOBAL WINDOW BINDINGS & EVENT ALIASES ---
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+}
+
+// --- GLOBAL WINDOW EXPORTS ---
 window.switchModalTab = switchModalTab;
 window.createNewLedger = createNewLedger;
 window.recallLedger = recallLedger;
@@ -1049,33 +1117,26 @@ window.closeShareModal = closeShareModal;
 window.copyShareLink = copyShareLink;
 window.goHome = goHome;
 window.deleteActiveLedger = deleteActiveLedger;
-
-// Participant Function Aliases
 window.addMemberDirect = addMemberDirect;
 window.stageMember = addMemberDirect;
 window.saveMembers = saveMembers;
 window.saveStagedMembers = saveMembers;
 window.deleteMember = deleteMember;
-
-// Expense Function Aliases
 window.addExpense = addExpense;
 window.startEditExpense = startEditExpense;
 window.cancelEditExpense = cancelEditExpense;
 window.updateExpense = updateExpense;
 window.deleteExpenseFromEdit = deleteExpenseFromEdit;
-
-// Settlement, Report & System Function Aliases
 window.copySettlementSummary = copySettlementSummary;
 window.generateLedgerReport = generateLedgerReport;
 window.generateReport = generateLedgerReport;
 window.switchLanguage = switchLanguage;
 window.saveCardLayout = saveCardLayout;
 window.selectAllSplits = selectAllSplits;
-window.toggleSelectAll = function(state) { selectAllSplits(); };
+window.toggleSelectAll = selectAllSplits;
 window.saveSettings = saveSettings;
-window.applyTheme = applyTheme;
 
-// --- INITIALIZE SYSTEM ---
+// --- INITIALIZE SYSTEM ENGINE ---
 document.addEventListener('DOMContentLoaded', () => {
     initTaglineCarousel();
     initCardDragging();
@@ -1084,7 +1145,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateInput) dateInput.value = formatToISODate(new Date());
 
     render();
-
-    // Eagerly pre-load archives in background immediately on initial landing
     loadGoogleSheetsArchive();
 });
