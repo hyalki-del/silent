@@ -1,11 +1,10 @@
 /**
  * ==========================================================================
  * SPENSE - Group Expense Tracker Main Controller
- * Fully Localized Architecture with Complete Category & Matrix Translation
  * ==========================================================================
  */
 
-console.log("%c[SPENSE] Engine & i18n Controller Loaded.", "color: #059669; font-weight: bold;");
+console.log("%c[SPENSE] Engine Loaded.", "color: #059669; font-weight: bold;");
 
 // --- Application State ---
 let currentTab = null;
@@ -40,7 +39,7 @@ var TRANSLATIONS = {
         historyTitle: "Ledger History", clickToEditSub: "(Click item to edit)", generateReportBtn: "Generate Report",
         historyPaidBy: "Paid by", historySplit: "Split", editBtn: "Edit", noExpensesRecorded: "No expenses recorded yet.",
         settlementPlaceholder: "Settlement matrix will appear once expenses are added.", allBalancesSettled: "All balances are currently settled!",
-        owesLabel: "owes",
+        settlementTpl: "{debtor} owes {creditor} {amount}",
         modalSub: "Create or open a confidential group ledger.", tabCreate: "Create New", tabRecall: "Recall Existing",
         ledgerNameLabel: "Ledger Name", ledgerNamePh: "e.g. dinner-club", setPinLabel: "Set 4-Digit PIN", initializeBtn: "Initialize Ledger",
         selectArchiveLabel: "Select Archive", enterPinLabel: "Enter 4-Digit PIN", accessLedgerBtn: "Access Ledger",
@@ -76,7 +75,7 @@ var TRANSLATIONS = {
         ]
     },
     tr: {
-        activeLedgerLabel: "Aktif defter:",
+        activeLedgerLabel: "Aktif Hesap:",
         awaitingAuthLabel: "KİMLİK DOĞRULAMA BEKLENİYOR...",
         settingsBtn: "⚙ Ayarlar", shareLinkBtn: "Bağlantıyı Paylaş", deleteBtn: "Sil",
         participantsTitle: "Katılımcılar", participantsSub: "Bu gruba kişi ekleyin veya çıkarın.",
@@ -91,12 +90,12 @@ var TRANSLATIONS = {
         historyTitle: "Geçmiş Kayıtlar", clickToEditSub: "(Düzenlemek için tıkla)", generateReportBtn: "Rapor Oluştur",
         historyPaidBy: "Ödeyen", historySplit: "Paylaşanlar", editBtn: "Düzenle", noExpensesRecorded: "Henüz harcama kaydedilmedi.",
         settlementPlaceholder: "Harcamalar eklendikten sonra ödeme matrisi görünecektir.", allBalancesSettled: "Tüm borçlar kapatılmıştır!",
-        owesLabel: "kişisine borçlu",
-        modalSub: "Gizli bir grup defteri oluşturun veya açın.", tabCreate: "Yeni Oluştur", tabRecall: "Var Olanı Aç",
-        ledgerNameLabel: "Defter Adı", ledgerNamePh: "ör. aksam-yemegi", setPinLabel: "4 Haneli PIN Belirleyin", initializeBtn: "Defteri Başlat",
-        selectArchiveLabel: "Arşiv Seç", enterPinLabel: "4 Haneli PIN Girin", accessLedgerBtn: "Deftere Eriş",
-        shareLinkHeader: "Defter Bağlantısını Paylaş", shareLinkSub: "Bu bağlantıya sahip herkes PIN girmelidir.", copyBtn: "Kopyala",
-        ledgerSettingsHeader: "Defter Ayarları", languageSettingLabel: "Dil", currencySettingLabel: "Para Birimi", themeSettingLabel: "Görsel Tema", saveSettingsBtn: "Ayarları Kaydet",
+        settlementTpl: "{debtor}, {creditor} adlı kişiye {amount} ödeyecek.",
+        modalSub: "Gizli bir grup Hesapi oluşturun veya açın.", tabCreate: "Yeni Oluştur", tabRecall: "Var Olanı Aç",
+        ledgerNameLabel: "Hesap Adı", ledgerNamePh: "ör. aksam-yemegi", setPinLabel: "4 Haneli PIN Belirleyin", initializeBtn: "Hesapi Başlat",
+        selectArchiveLabel: "Arşiv Seç", enterPinLabel: "4 Haneli PIN Girin", accessLedgerBtn: "Hesape Eriş",
+        shareLinkHeader: "Hesap Bağlantısını Paylaş", shareLinkSub: "Bu bağlantıya sahip herkes PIN girmelidir.", copyBtn: "Kopyala",
+        ledgerSettingsHeader: "Hesap Ayarları", languageSettingLabel: "Dil", currencySettingLabel: "Para Birimi", themeSettingLabel: "Görsel Tema", saveSettingsBtn: "Ayarları Kaydet",
         categories: {
             "Food & Drink": "Yiyecek & İçecek",
             "Transport": "Ulaşım",
@@ -105,19 +104,19 @@ var TRANSLATIONS = {
             "Entertainment": "Eğlence",
             "Other": "Diğer"
         },
-        alertValidLedgerPin: "Lütfen geçerli bir defter adı ve 4 haneli PIN girin.",
-        alertSelectLedgerPin: "Lütfen bir defter seçin ve 4 haneli PIN girin.",
-        alertAccessLedgerFirst: "Önce bir deftere erişin veya yeni defter başlatın.",
+        alertValidLedgerPin: "Lütfen geçerli bir Hesap adı ve 4 haneli PIN girin.",
+        alertSelectLedgerPin: "Lütfen bir Hesap seçin ve 4 haneli PIN girin.",
+        alertAccessLedgerFirst: "Önce bir Hesape erişin veya yeni Hesap başlatın.",
         alertParticipantExists: "Bu katılımcı zaten mevcut.",
         confirmRemoveParticipant: "Katılımcıyı silmek istediğinizden emin misiniz",
         alertFillFields: "Lütfen tüm harcama alanlarını doğru doldurun.",
         alertSelectSplitParticipant: "Paylaşacak en az bir kişi seçin.",
         confirmDeleteExpense: "Bu harcamayı silmek istediğinizden emin misiniz?",
-        confirmDeleteLedger: "Aktif defteri silmek istediğinizden emin misiniz?",
+        confirmDeleteLedger: "Aktif Hesapi silmek istediğinizden emin misiniz?",
         noBalancesToCopy: "Kopyalanacak ödeme dengesi yok.",
         summaryCopied: "Ödeme özeti panoya kopyalandı!",
         copyFailed: "Otomatik kopyalanamadı. Özet:\n\n",
-        reportTitle: "SPENSE DEFTER RAPORU", reportNameLabel: "Defter Adı", reportGeneratedOn: "Oluşturulma Tarihi", reportParticipants: "Katılımcılar",
+        reportTitle: "SPENSE Hesap RAPORU", reportNameLabel: "Hesap Adı", reportGeneratedOn: "Oluşturulma Tarihi", reportParticipants: "Katılımcılar",
         reportTotalSpend: "Toplam Harcama", reportSettlementMatrix: "ÖDEME MATRİSİ", reportAllSettled: "Tüm borçlar kapatılmıştır!",
         reportHistoryTitle: "DETAYLI İŞLEM GEÇMİŞİ", reportNoExpenses: "Henüz harcama kaydedilmedi.", reportPaidBy: "Ödeyen", reportSplitWith: "Paylaşanlar",
         taglines: [
@@ -142,7 +141,7 @@ var TRANSLATIONS = {
         historyTitle: "Verlauf", clickToEditSub: "(Zum Bearbeiten anklicken)", generateReportBtn: "Bericht Erstellen",
         historyPaidBy: "Bezahlt von", historySplit: "Aufgeteilt", editBtn: "Bearbeiten", noExpensesRecorded: "Noch keine Ausgaben erfasst.",
         settlementPlaceholder: "Die Abrechnungsmatrix wird angezeigt, sobald Ausgaben hinzugefügt wurden.", allBalancesSettled: "Alle Salden sind ausgeglichen!",
-        owesLabel: "schuldet",
+        settlementTpl: "{debtor} schuldet {creditor} {amount}",
         modalSub: "Gruppenbuch öffnen.", tabCreate: "Neu", tabRecall: "Öffnen",
         ledgerNameLabel: "Name", ledgerNamePh: "z.B. club", setPinLabel: "PIN", initializeBtn: "Starten",
         selectArchiveLabel: "Archiv Wählen", enterPinLabel: "PIN Eingeben", accessLedgerBtn: "Zugreifen",
@@ -660,7 +659,16 @@ function calculateSettlement() {
     let i = 0, j = 0;
     while (i < debtors.length && j < creditors.length) {
         const minAmt = Math.min(debtors[i].amount, creditors[j].amount);
-        transactions.push(`${debtors[i].member} ${t.owesLabel} ${creditors[j].member} ${getCurrencySymbol()}${minAmt.toFixed(2)}`);
+        const formattedAmount = `${getCurrencySymbol()}${minAmt.toFixed(2)}`;
+        
+        const template = t.settlementTpl || "{debtor} owes {creditor} {amount}";
+        const txStr = template
+            .replace('{debtor}', debtors[i].member)
+            .replace('{creditor}', creditors[j].member)
+            .replace('{amount}', formattedAmount);
+
+        transactions.push(txStr);
+
         debtors[i].amount -= minAmt; creditors[j].amount -= minAmt;
         if (debtors[i].amount < 0.01) i++;
         if (creditors[j].amount < 0.01) j++;
