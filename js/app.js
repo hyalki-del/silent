@@ -1,12 +1,12 @@
 /**
  * ==========================================================================
  * SPENSE - Group Expense Tracker Master Controller
- * CS Senior Architecture: Multi-DOM Contract Resolver, Full State Machine,
- *                        Eager Archive Prefetching & Dynamic Tagline Engine
+ * CS Senior Architecture: Multi-DOM Contract Resolver, Safe Translation Lookup,
+ *                        Eager Archive Prefetching & Universal Event Aliases
  * ==========================================================================
  */
 
-console.log("%c[SPENSE] Engine & Controller Active.", "color: #059669; font-weight: bold;");
+console.log("%c[SPENSE] Master Controller Active.", "color: #059669; font-weight: bold;");
 
 // --- GLOBAL STATE MACHINE ---
 let currentTab = null;
@@ -16,7 +16,7 @@ let currentCurrency = 'USD';
 let currentTheme = 'Silk';
 let ledgerData = { members: [], expenses: [] };
 
-// Archive Caching State
+// Archive Caching State for Eager Pre-fetching
 let cachedArchives = null;
 let isFetchingArchives = false;
 
@@ -25,17 +25,18 @@ let selectedModalLang = 'en';
 let selectedModalCurrency = 'USD';
 let selectedModalTheme = 'Silk';
 
-// Form Staging State
+// Form Staging & Edit State Variables
 let unsavedMembers = [];
 let editingExpenseId = null;
 
-// --- SAFE TRANSLATION RESOLVER ---
+// --- SAFE TRANSLATION DICTIONARY RESOLVER ---
+// Prevents duplicate 'TRANSLATIONS' declaration syntax errors with js/i18n.js
 function getTranslations() {
-    if (window.TRANSLATIONS && window.TRANSLATIONS[currentLang]) {
+    if (typeof window.TRANSLATIONS !== 'undefined' && window.TRANSLATIONS[currentLang]) {
         return window.TRANSLATIONS[currentLang];
     }
-    if (window.TRANSLATIONS && window.TRANSLATIONS['en']) {
-        return window.TRANSLATIONS['en'];
+    if (typeof TRANSLATIONS !== 'undefined' && TRANSLATIONS[currentLang]) {
+        return TRANSLATIONS[currentLang];
     }
     return {};
 }
@@ -139,7 +140,7 @@ function renderArchiveDropdown(selectElement, ledgersArray) {
     }
 }
 
-// --- HELPER UTILITIES ---
+// --- DETERMINISTIC DATE & NAME NORMALIZERS ---
 function formatToISODate(rawDate) {
     if (!rawDate) {
         const today = new Date();
@@ -203,7 +204,7 @@ function applyTheme(themeName) {
     document.documentElement.setAttribute('data-theme', themeName.toLowerCase());
 }
 
-// --- SETTINGS CONTROLLER ---
+// --- SETTINGS SELECTION CONTROLLER ---
 function selectSettingsLang(lang) {
     selectedModalLang = lang;
     ['tr', 'en', 'de'].forEach(l => {
@@ -273,7 +274,7 @@ async function saveSettings() {
     }
 }
 
-// --- DYNAMIC TAGLINE CAROUSEL ---
+// --- DYNAMIC TAGLINE CAROUSEL ENGINE ---
 let taglineTimer = null;
 let currentTaglineIndex = 0;
 
@@ -291,7 +292,7 @@ function initTaglineCarousel() {
         if (activeTaglines.length === 0) return;
 
         spot.className = "w-full text-center leading-snug";
-        void spot.offsetWidth;
+        void spot.offsetWidth; // Force reflow to re-trigger CSS keyframe animations
 
         spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
 
@@ -311,7 +312,7 @@ function switchLanguage(lang) {
     initTaglineCarousel();
 }
 
-// --- CARD DRAGGING & LAYOUT ---
+// --- CARD REORDERING DRAG ENGINE ---
 function initCardDragging() {
     const container = document.getElementById('appContainer');
     if (!container) return;
@@ -523,7 +524,9 @@ function openShareModal() {
     const input = document.getElementById('shareLinkInput');
     if (input && currentTab) input.value = `${window.location.origin}${window.location.pathname}?ledger=${encodeURIComponent(currentTab)}`;
 }
+
 function closeShareModal() { document.getElementById('shareModal')?.classList.add('hidden'); }
+
 function copyShareLink() {
     const input = document.getElementById('shareLinkInput');
     if (input) { input.select(); navigator.clipboard.writeText(input.value); alert("Copied share link!"); }
@@ -614,12 +617,13 @@ async function deleteMember(name, event) {
 
 // --- EXPENSE EDITING ENGINE (FULLY RESTORED) ---
 function startEditExpense(id) {
+    if (!id) return;
     const exp = ledgerData.expenses.find(e => e.id.toString() === id.toString());
     if (!exp) return;
 
     editingExpenseId = id.toString();
 
-    // Populate Input Fields
+    // Populate Input Fields in the Form
     const dateInput = document.getElementById('expenseDate');
     const descInput = document.getElementById('expenseDesc');
     const amountInput = document.getElementById('expenseAmount');
@@ -633,7 +637,7 @@ function startEditExpense(id) {
     if (paidByInput) paidByInput.value = findMemberCanonical(exp.paidBy) || '';
 
     // Re-check corresponding split checkboxes
-    const splitArr = (Array.isArray(e.splitWith) ? exp.splitWith : (exp.splitBetween || [])).map(s => s.toLowerCase());
+    const splitArr = (Array.isArray(exp.splitWith) ? exp.splitWith : (exp.splitBetween || [])).map(s => s.toLowerCase());
     document.querySelectorAll('.split-checkbox').forEach(cb => {
         cb.checked = splitArr.includes(cb.value.toLowerCase());
     });
@@ -870,10 +874,6 @@ function selectAllSplits() {
     document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = true);
 }
 
-function toggleSelectAll(state) {
-    selectAllSplits();
-}
-
 // --- MASTER UI RENDERING ENGINE ---
 function render() {
     const t = getTranslations();
@@ -900,6 +900,7 @@ function render() {
             `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>`;
     }
 
+    // Toggle header buttons (handles both ID variants)
     ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings', 'settingsBtn', 'shareBtn', 'deleteLedgerBtn'].forEach(id => {
         document.getElementById(id)?.classList.toggle('hidden', !currentTab);
     });
@@ -939,7 +940,7 @@ function renderExpenseFormHeader() {
     const titleEl = document.getElementById('expenseFormTitle');
     const subEl = document.getElementById('expenseFormSub');
     
-    // RESOLVES CONTRACT MISMATCH: Checks for both HTML ID variants
+    // Supports both 'expenseFormActions' and 'expenseFormButtons' DOM IDs
     const actionsContainer = document.getElementById('expenseFormActions') || document.getElementById('expenseFormButtons');
     if (!titleEl || !subEl || !actionsContainer) return;
 
@@ -949,7 +950,7 @@ function renderExpenseFormHeader() {
         titleEl.innerText = t.editExpenseTitle || "Edit Expense";
         subEl.innerText = t.editExpenseSub || "Modify or delete this expense.";
         
-        // INJECTS EDIT CONTROLS: Delete, Cancel, Update
+        // Dynamically injects Delete, Cancel, and Update action buttons
         actionsContainer.innerHTML = `
             <div class="grid grid-cols-3 gap-2">
                 <button type="button" onclick="window.deleteExpenseFromEdit()" class="theme-btn bg-rose-500 hover:bg-rose-600 text-white py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.deleteExpenseBtn || "Delete"}</button>
@@ -1034,7 +1035,7 @@ function renderSettlement() {
         : '<p class="font-bold text-center py-2 text-emerald-600">All balances are currently settled!</p>';
 }
 
-// --- GLOBAL WINDOW BINDINGS (DOM COMPATIBILITY LAYER) ---
+// --- GLOBAL WINDOW BINDINGS & EVENT ALIASING ---
 window.switchModalTab = switchModalTab;
 window.createNewLedger = createNewLedger;
 window.recallLedger = recallLedger;
@@ -1048,27 +1049,33 @@ window.closeShareModal = closeShareModal;
 window.copyShareLink = copyShareLink;
 window.goHome = goHome;
 window.deleteActiveLedger = deleteActiveLedger;
+
+// Participant Aliases
 window.addMemberDirect = addMemberDirect;
 window.stageMember = addMemberDirect;
 window.saveMembers = saveMembers;
 window.saveStagedMembers = saveMembers;
 window.deleteMember = deleteMember;
+
+// Expense Aliases
 window.addExpense = addExpense;
 window.startEditExpense = startEditExpense;
 window.cancelEditExpense = cancelEditExpense;
 window.updateExpense = updateExpense;
 window.deleteExpenseFromEdit = deleteExpenseFromEdit;
+
+// Matrix, Reports & UI Aliases
 window.copySettlementSummary = copySettlementSummary;
 window.generateLedgerReport = generateLedgerReport;
 window.generateReport = generateLedgerReport;
 window.switchLanguage = switchLanguage;
 window.saveCardLayout = saveCardLayout;
 window.selectAllSplits = selectAllSplits;
-window.toggleSelectAll = toggleSelectAll;
+window.toggleSelectAll = function(state) { selectAllSplits(); };
 window.saveSettings = saveSettings;
 window.applyTheme = applyTheme;
 
-// --- INITIALIZE SYSTEM ---
+// --- SYSTEM INITIALIZATION ENGINE ---
 document.addEventListener('DOMContentLoaded', () => {
     initTaglineCarousel();
     initCardDragging();
@@ -1077,5 +1084,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateInput) dateInput.value = formatToISODate(new Date());
 
     render();
+
+    // Eagerly pre-loads archive list asynchronously on initial landing
     loadGoogleSheetsArchive();
 });
