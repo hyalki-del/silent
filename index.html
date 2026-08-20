@@ -96,8 +96,8 @@
                     </div>
 
                     <div id="viewModeIndicator" class="flex flex-col text-left sm:text-center flex-grow min-w-[200px]">
-                        <span class="text-sm sm:text-base font-medium uppercase tracking-wider opacity-70">Active ledger:</span>
-                        <span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>
+                        <span data-i18n="activeLedgerLabel" class="text-sm sm:text-base font-medium uppercase tracking-wider opacity-70">Active ledger:</span>
+                        <span id="activeLedgerName" class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>
                     </div>
 
                     <div class="flex flex-col gap-2 flex-shrink-0">
@@ -259,12 +259,12 @@
     <div id="settingsModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 pointer-events-auto">
         <div class="theme-card bg-white p-6 max-w-md w-full space-y-6 shadow-2xl text-slate-900">
             <div class="flex justify-between items-center border-b border-slate-200 pb-3">
-                <h3 class="text-sm font-black uppercase tracking-wider">Ledger Settings</h3>
+                <h3 data-i18n="ledgerSettingsHeader" class="text-sm font-black uppercase tracking-wider">Ledger Settings</h3>
                 <button id="btnCloseSettings" type="button" onclick="window.closeSettingsModal()" class="text-slate-500 hover:text-slate-900 text-xl font-bold cursor-pointer">×</button>
             </div>
 
             <div class="space-y-2">
-                <label class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Language</label>
+                <label data-i18n="languageSettingLabel" class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Language</label>
                 <div class="grid grid-cols-3 gap-2">
                     <button type="button" onclick="window.selectSettingsLang('tr')" id="setLangTR" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">TÜRKÇE</button>
                     <button type="button" onclick="window.selectSettingsLang('en')" id="setLangEN" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">ENGLISH</button>
@@ -273,7 +273,7 @@
             </div>
 
             <div class="space-y-2">
-                <label class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Currency</label>
+                <label data-i18n="currencySettingLabel" class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Currency</label>
                 <div class="grid grid-cols-3 gap-2">
                     <button type="button" onclick="window.selectSettingsCurrency('USD')" id="setCurrUSD" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer"><span class="text-base font-black">$</span> USD</button>
                     <button type="button" onclick="window.selectSettingsCurrency('EUR')" id="setCurrEUR" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer"><span class="text-base font-black">€</span> EUR</button>
@@ -282,7 +282,7 @@
             </div>
 
             <div class="space-y-2">
-                <label class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Visual Template</label>
+                <label data-i18n="themeSettingLabel" class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Visual Template</label>
                 <div class="grid grid-cols-3 gap-2">
                     <button type="button" onclick="window.selectSettingsTheme('Silk')" id="setThemeSilk" class="theme-btn py-3 px-2 border-2 border-slate-200 bg-slate-50 rounded-xl text-center transition cursor-pointer"><span class="block text-xs font-black font-sans text-slate-900">Silk</span></button>
                     <button type="button" onclick="window.selectSettingsTheme('Toon')" id="setThemeToon" class="theme-btn py-3 px-2 border-2 border-slate-200 bg-amber-100 rounded-xl text-center transition cursor-pointer"><span class="block text-xs font-black font-serif text-slate-900">Toon</span></button>
@@ -290,7 +290,7 @@
                 </div>
             </div>
 
-            <button id="btnSaveSettings" type="button" onclick="window.saveSettings()" class="w-full theme-btn bg-lime-400 hover:bg-lime-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Save Settings</button>
+            <button id="btnSaveSettings" type="button" onclick="window.saveSettings()" data-i18n="saveSettingsBtn" class="w-full theme-btn bg-lime-400 hover:bg-lime-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Save Settings</button>
         </div>
     </div>
 
