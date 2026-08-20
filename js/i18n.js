@@ -1,24 +1,17 @@
 /* ==========================================================================
    SPENSE - Internationalization (i18n) Engine
-   Architecture: Centralized Multilingual Dictionaries & Localization Registry
    ========================================================================== */
 
-const TRANSLATIONS = {
+window.TRANSLATIONS = {
     en: {
-        // --- App / Header ---
         settingsBtn: "⚙ Settings",
         shareLinkBtn: "Share Link",
         deleteBtn: "Delete",
-        editBtn: "Edit",
-        
-        // --- Participants Frame ---
         participantsTitle: "Participants",
         participantsSub: "Add or remove people from this group.",
         namePlaceholder: "Name...",
         addBtn: "Add",
-        saveMembersBtn: "Save New Participants",
-
-        // --- Expense Form Frame ---
+        saveMembersBtn: "Save Participants",
         newExpenseTitle: "New Expense",
         editExpenseTitle: "Edit Expense",
         newExpenseSub: "Log a transaction to split.",
@@ -35,25 +28,10 @@ const TRANSLATIONS = {
         updateExpenseBtn: "Update Expense",
         cancelEditBtn: "Cancel",
         deleteExpenseBtn: "Delete Expense",
-
-        // --- Categories ---
-        catFood: "Food & Drink",
-        catTransport: "Transport",
-        catAccommodation: "Accommodation",
-        catShopping: "Shopping",
-        catEntertainment: "Entertainment",
-        catOther: "Other",
-
-        // --- Settlement Matrix Frame ---
         settlementTitle: "Settlement Matrix",
         copySummaryBtn: "Copy Summary",
-
-        // --- Ledger History Frame ---
         historyTitle: "Ledger History",
-        clickToEditSub: "(Click item to edit)",
         generateReportBtn: "Generate Report",
-
-        // --- Welcome Modal ---
         modalSub: "Create or open a confidential group ledger.",
         tabCreate: "Create New",
         tabRecall: "Recall Existing",
@@ -62,52 +40,26 @@ const TRANSLATIONS = {
         setPinLabel: "Set 4-Digit PIN",
         initializeBtn: "Initialize Ledger",
         selectArchiveLabel: "Select Archive",
-        accessingSharedLabel: "Accessing Shared Ledger",
         enterPinLabel: "Enter 4-Digit PIN",
         accessLedgerBtn: "Access Ledger",
-
-        // --- Modals / Statuses ---
         shareLinkHeader: "Share Ledger Link",
-        shareLinkSub: "Anyone with this link will only need to enter the 4-digit PIN to access this ledger.",
+        shareLinkSub: "Anyone with this link will only need to enter PIN.",
         copyBtn: "Copy",
-        processingMsg: "Processing...",
-
-        // --- Report Generator Engine ---
-        reportTitle: "SPENSE LEDGER REPORT",
-        reportNameLabel: "Ledger Name",
-        reportGeneratedOn: "Generated On",
-        reportParticipants: "Participants",
-        reportTotalSpend: "Total Spend",
-        reportSettlementMatrix: "SETTLEMENT MATRIX",
-        reportAllSettled: "All balances are currently settled!",
-        reportHistoryTitle: "ITEMIZED TRANSACTION HISTORY",
-        reportNoExpenses: "No expenses recorded.",
-        reportPaidBy: "Paid By",
-        reportSplitWith: "Split With",
-
-        // --- Dynamic Tagline Carousel ---
         taglines: [
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Spend simply.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Enjoy the moment. Leave tracking to SPENSE.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Just add what you spent.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Who paid? Who shares? SPENSE does the math.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Settle easily.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">See who owes whom — and how much.</span>`
+            `<strong class="block font-black text-slate-900 text-lg sm:text-2xl leading-tight">Spend simply.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Enjoy the moment. Leave tracking to SPENSE.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-2xl leading-tight">Just add what you spent.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Who paid? Who shares? SPENSE does the math.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-2xl leading-tight">Settle easily.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">See who owes whom — and how much.</span>`
         ]
     },
-
     tr: {
-        // --- App / Header ---
         settingsBtn: "⚙ Ayarlar",
         shareLinkBtn: "Bağlantıyı Paylaş",
         deleteBtn: "Sil",
-        editBtn: "Düzenle",
-
-        // --- Participants Frame ---
         participantsTitle: "Katılımcılar",
         participantsSub: "Bu gruba kişi ekleyin veya çıkarın.",
         namePlaceholder: "İsim...",
         addBtn: "Ekle",
-        saveMembersBtn: "Yeni Katılımcıları Kaydet",
-
-        // --- Expense Form Frame ---
+        saveMembersBtn: "Katılımcıları Kaydet",
         newExpenseTitle: "Yeni Harcama",
         editExpenseTitle: "Harcamayı Düzenle",
         newExpenseSub: "Bölüştürmek için işlem kaydedin.",
@@ -124,25 +76,10 @@ const TRANSLATIONS = {
         updateExpenseBtn: "Harcamayı Güncelle",
         cancelEditBtn: "İptal",
         deleteExpenseBtn: "Harcamayı Sil",
-
-        // --- Categories ---
-        catFood: "Yeme & İçme",
-        catTransport: "Ulaşım",
-        catAccommodation: "Konaklama",
-        catShopping: "Alışveriş",
-        catEntertainment: "Eğlence",
-        catOther: "Diğer",
-
-        // --- Settlement Matrix Frame ---
         settlementTitle: "Ödeme Matrisi",
         copySummaryBtn: "Özeti Kopyala",
-
-        // --- Ledger History Frame ---
         historyTitle: "Geçmiş Kayıtlar",
-        clickToEditSub: "(Düzenlemek için tıkla)",
         generateReportBtn: "Rapor Oluştur",
-
-        // --- Welcome Modal ---
         modalSub: "Gizli bir grup defteri oluşturun veya açın.",
         tabCreate: "Yeni Oluştur",
         tabRecall: "Var Olanı Aç",
@@ -150,56 +87,30 @@ const TRANSLATIONS = {
         ledgerNamePh: "ör. aksam-yemegi",
         setPinLabel: "4 Haneli PIN Belirleyin",
         initializeBtn: "Defteri Başlat",
-        selectArchiveLabel: "Arşivden Seç",
-        accessingSharedLabel: "Paylaşılan Deftere Erişiliyor",
+        selectArchiveLabel: "Arşiv Seç",
         enterPinLabel: "4 Haneli PIN Girin",
         accessLedgerBtn: "Deftere Eriş",
-
-        // --- Modals / Statuses ---
         shareLinkHeader: "Defter Bağlantısını Paylaş",
-        shareLinkSub: "Bu bağlantıya sahip herkes deftere erişmek için yalnızca 4 haneli PIN'i girmelidir.",
+        shareLinkSub: "Bu bağlantıya sahip herkes PIN girmelidir.",
         copyBtn: "Kopyala",
-        processingMsg: "İşleniyor...",
-
-        // --- Report Generator Engine ---
-        reportTitle: "SPENSE DEFTER RAPORU",
-        reportNameLabel: "Defter Adı",
-        reportGeneratedOn: "Oluşturulma",
-        reportParticipants: "Katılımcılar",
-        reportTotalSpend: "Toplam Harcama",
-        reportSettlementMatrix: "ÖDEME MATRİSİ",
-        reportAllSettled: "Tüm hesaplar kapatıldı!",
-        reportHistoryTitle: "DETAYLI İŞLEM GEÇMİŞİ",
-        reportNoExpenses: "Henüz harcama kaydedilmedi.",
-        reportPaidBy: "Ödeyen",
-        reportSplitWith: "Paylaşanlar",
-
-        // --- Dynamic Tagline Carousel ---
         taglines: [
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Kolayca harca.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Anın tadını çıkar. Takibi SPENSE'e bırak.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Sadece harcamanı ekle.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kim ödedi? Kimler paylaşıyor? Matematik işini SPENSE yapar.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Rahatça hesabı kapat.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kimin kime borcu var — anında gör.</span>`
+            `<strong class="block font-black text-slate-900 text-lg sm:text-2xl leading-tight">Kolayca harca.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Anın tadını çıkar. Takibi SPENSE'e bırak.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-2xl leading-tight">Sadece harcamanı ekle.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kim ödedi? Kimler paylaşıyor? Matematik işini SPENSE yapar.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-2xl leading-tight">Rahatça hesabı kapat.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kimin kime borcu var — anında gör.</span>`
         ]
     },
-
     de: {
-        // --- App / Header ---
         settingsBtn: "⚙ Einstellungen",
         shareLinkBtn: "Link Teilen",
         deleteBtn: "Löschen",
-        editBtn: "Bearbeiten",
-
-        // --- Participants Frame ---
         participantsTitle: "Teilnehmer",
-        participantsSub: "Personen zu dieser Gruppe hinzufügen oder entfernen.",
+        participantsSub: "Personen hinzufügen oder entfernen.",
         namePlaceholder: "Name...",
         addBtn: "Hinzufügen",
-        saveMembersBtn: "Neue Teilnehmer Speichern",
-
-        // --- Expense Form Frame ---
+        saveMembersBtn: "Teilnehmer Speichern",
         newExpenseTitle: "Neue Ausgabe",
         editExpenseTitle: "Ausgabe Bearbeiten",
-        newExpenseSub: "Tragen Sie eine Transaktion zum Aufteilen ein.",
+        newExpenseSub: "Transaktion eintragen.",
         editExpenseSub: "Ändern oder löschen Sie diese Ausgabe.",
         dateLabel: "Datum",
         categoryLabel: "Kategorie",
@@ -207,70 +118,33 @@ const TRANSLATIONS = {
         descPlaceholder: "z.B. Abendessen",
         amountLabel: "Betrag",
         paidByLabel: "Bezahlt von",
-        splitBetweenLabel: "Aufteilen zwischen:",
-        selectAllBtn: "Alle Auswählen",
-        recordExpenseBtn: "Ausgabe Aufzeichnen",
+        splitBetweenLabel: "Aufteilen:",
+        selectAllBtn: "Alle",
+        recordExpenseBtn: "Speichern",
         updateExpenseBtn: "Aktualisieren",
         cancelEditBtn: "Abbrechen",
-        deleteExpenseBtn: "Ausgabe Löschen",
-
-        // --- Categories ---
-        catFood: "Essen & Trinken",
-        catTransport: "Transport",
-        catAccommodation: "Unterkunft",
-        catShopping: "Einkaufen",
-        catEntertainment: "Unterhaltung",
-        catOther: "Sonstiges",
-
-        // --- Settlement Matrix Frame ---
+        deleteExpenseBtn: "Löschen",
         settlementTitle: "Abrechnungsmatrix",
-        copySummaryBtn: "Zusammenfassung Kopieren",
-
-        // --- Ledger History Frame ---
+        copySummaryBtn: "Kopieren",
         historyTitle: "Verlauf",
-        clickToEditSub: "(Zum Bearbeiten anklicken)",
         generateReportBtn: "Bericht Erstellen",
-
-        // --- Welcome Modal ---
-        modalSub: "Erstellen oder öffnen Sie ein vertrauliches Gruppenbuch.",
-        tabCreate: "Neu Erstellen",
-        tabRecall: "Vorhandenes Öffnen",
-        ledgerNameLabel: "Name des Buches",
-        ledgerNamePh: "z.B. abendessen-club",
-        setPinLabel: "4-stellige PIN Festlegen",
-        initializeBtn: "Buch Initialisieren",
-        selectArchiveLabel: "Aus Archiv Auswählen",
-        accessingSharedLabel: "Zugriff Auf Geteiltes Buch",
-        enterPinLabel: "4-stellige PIN Eingeben",
-        accessLedgerBtn: "Auf Buch Zugreifen",
-
-        // --- Modals / Statuses ---
-        shareLinkHeader: "Buch-Link Teilen",
-        shareLinkSub: "Jeder mit diesem Link muss nur die 4-stellige PIN eingeben, um auf dieses Buch zuzugreifen.",
+        modalSub: "Gruppenbuch öffnen.",
+        tabCreate: "Neu",
+        tabRecall: "Öffnen",
+        ledgerNameLabel: "Name",
+        ledgerNamePh: "z.B. club",
+        setPinLabel: "PIN",
+        initializeBtn: "Starten",
+        selectArchiveLabel: "Archiv Wählen",
+        enterPinLabel: "PIN Eingeben",
+        accessLedgerBtn: "Zugreifen",
+        shareLinkHeader: "Teilen",
+        shareLinkSub: "PIN erforderlich.",
         copyBtn: "Kopieren",
-        processingMsg: "Verarbeitung...",
-
-        // --- Report Generator Engine ---
-        reportTitle: "SPENSE BERICHT",
-        reportNameLabel: "Name",
-        reportGeneratedOn: "Erstellt am",
-        reportParticipants: "Teilnehmer",
-        reportTotalSpend: "Gesamtausgaben",
-        reportSettlementMatrix: "ABRECHNUNGSMATRIX",
-        reportAllSettled: "Alle Salden sind ausgeglichen!",
-        reportHistoryTitle: "TRANSAKTIONSVERLAUF",
-        reportNoExpenses: "Keine Ausgaben erfasst.",
-        reportPaidBy: "Bezahlt von",
-        reportSplitWith: "Aufgeteilt mit",
-
-        // --- Dynamic Tagline Carousel ---
         taglines: [
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach ausgeben.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Genieße den Moment. Überlasse die Spesenverfolgung SPENSE.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach eintragen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Wer hat bezahlt? Wer teilt es? SPENSE macht die Rechnung.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach abrechnen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Sehen Sie genau, wer wem schuldet — und wie viel.</span>`
+            `<strong class="block font-black text-slate-900 text-lg sm:text-2xl leading-tight">Einfach ausgeben.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Genieße den Moment. Überlasse die Nachverfolgung SPENSE.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-2xl leading-tight">Einfach eintragen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Wer hat bezahlt? Wer teilt es? SPENSE macht die Rechnung.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-2xl leading-tight">Einfach abrechnen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Sehen Sie wer wem schuldet — und wie viel.</span>`
         ]
     }
 };
-
-// Global default language state
-let currentLang = 'en';
