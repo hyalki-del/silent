@@ -1,8 +1,8 @@
 /**
  * ==========================================================================
  * SPENSE - Group Expense Tracker Master Controller
- * CS Senior Architecture: Multi-DOM Contract Resolver, Safe Translation Lookup,
- *                        Eager Archive Prefetching & Universal Event Aliases
+ * CS Senior Architecture: Full Multi-Language Routing, Dynamic Tagline Engine,
+ *                        Full CRUD State Machine & Multi-DOM Contract Resolver
  * ==========================================================================
  */
 
@@ -30,7 +30,7 @@ let unsavedMembers = [];
 let editingExpenseId = null;
 
 // --- SAFE TRANSLATION DICTIONARY RESOLVER ---
-// Prevents duplicate 'TRANSLATIONS' declaration syntax errors with js/i18n.js
+// Safely reads translation dictionaries without duplicate 'const TRANSLATIONS' syntax crashes
 function getTranslations() {
     if (typeof window.TRANSLATIONS !== 'undefined' && window.TRANSLATIONS[currentLang]) {
         return window.TRANSLATIONS[currentLang];
@@ -292,7 +292,7 @@ function initTaglineCarousel() {
         if (activeTaglines.length === 0) return;
 
         spot.className = "w-full text-center leading-snug";
-        void spot.offsetWidth; // Force reflow to re-trigger CSS keyframe animations
+        void spot.offsetWidth; // Force synchronous reflow to re-trigger CSS animation
 
         spot.innerHTML = activeTaglines[currentTaglineIndex % activeTaglines.length];
 
@@ -615,7 +615,7 @@ async function deleteMember(name, event) {
     await callBackend('removeMember', { name: canonicalName });
 }
 
-// --- EXPENSE EDITING ENGINE (FULLY RESTORED) ---
+// --- EXPENSE EDITING ENGINE ---
 function startEditExpense(id) {
     if (!id) return;
     const exp = ledgerData.expenses.find(e => e.id.toString() === id.toString());
@@ -623,7 +623,7 @@ function startEditExpense(id) {
 
     editingExpenseId = id.toString();
 
-    // Populate Input Fields in the Form
+    // Populate Input Fields in the Expense Form
     const dateInput = document.getElementById('expenseDate');
     const descInput = document.getElementById('expenseDesc');
     const amountInput = document.getElementById('expenseAmount');
@@ -900,7 +900,7 @@ function render() {
             `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>`;
     }
 
-    // Toggle header buttons (handles both ID variants)
+    // Toggle header buttons (supports all HTML DOM variants)
     ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings', 'settingsBtn', 'shareBtn', 'deleteLedgerBtn'].forEach(id => {
         document.getElementById(id)?.classList.toggle('hidden', !currentTab);
     });
@@ -940,7 +940,7 @@ function renderExpenseFormHeader() {
     const titleEl = document.getElementById('expenseFormTitle');
     const subEl = document.getElementById('expenseFormSub');
     
-    // Supports both 'expenseFormActions' and 'expenseFormButtons' DOM IDs
+    // Multi-DOM Target Resolver: Connects both 'expenseFormActions' and 'expenseFormButtons' IDs
     const actionsContainer = document.getElementById('expenseFormActions') || document.getElementById('expenseFormButtons');
     if (!titleEl || !subEl || !actionsContainer) return;
 
@@ -950,7 +950,7 @@ function renderExpenseFormHeader() {
         titleEl.innerText = t.editExpenseTitle || "Edit Expense";
         subEl.innerText = t.editExpenseSub || "Modify or delete this expense.";
         
-        // Dynamically injects Delete, Cancel, and Update action buttons
+        // Dynamically replaces the form button block with Delete, Cancel, and Update
         actionsContainer.innerHTML = `
             <div class="grid grid-cols-3 gap-2">
                 <button type="button" onclick="window.deleteExpenseFromEdit()" class="theme-btn bg-rose-500 hover:bg-rose-600 text-white py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.deleteExpenseBtn || "Delete"}</button>
@@ -1035,7 +1035,7 @@ function renderSettlement() {
         : '<p class="font-bold text-center py-2 text-emerald-600">All balances are currently settled!</p>';
 }
 
-// --- GLOBAL WINDOW BINDINGS & EVENT ALIASING ---
+// --- GLOBAL WINDOW BINDINGS & EVENT ALIASES ---
 window.switchModalTab = switchModalTab;
 window.createNewLedger = createNewLedger;
 window.recallLedger = recallLedger;
@@ -1050,21 +1050,21 @@ window.copyShareLink = copyShareLink;
 window.goHome = goHome;
 window.deleteActiveLedger = deleteActiveLedger;
 
-// Participant Aliases
+// Participant Function Aliases
 window.addMemberDirect = addMemberDirect;
 window.stageMember = addMemberDirect;
 window.saveMembers = saveMembers;
 window.saveStagedMembers = saveMembers;
 window.deleteMember = deleteMember;
 
-// Expense Aliases
+// Expense Function Aliases
 window.addExpense = addExpense;
 window.startEditExpense = startEditExpense;
 window.cancelEditExpense = cancelEditExpense;
 window.updateExpense = updateExpense;
 window.deleteExpenseFromEdit = deleteExpenseFromEdit;
 
-// Matrix, Reports & UI Aliases
+// Settlement, Report & System Function Aliases
 window.copySettlementSummary = copySettlementSummary;
 window.generateLedgerReport = generateLedgerReport;
 window.generateReport = generateLedgerReport;
@@ -1075,7 +1075,7 @@ window.toggleSelectAll = function(state) { selectAllSplits(); };
 window.saveSettings = saveSettings;
 window.applyTheme = applyTheme;
 
-// --- SYSTEM INITIALIZATION ENGINE ---
+// --- INITIALIZE SYSTEM ---
 document.addEventListener('DOMContentLoaded', () => {
     initTaglineCarousel();
     initCardDragging();
@@ -1085,6 +1085,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     render();
 
-    // Eagerly pre-loads archive list asynchronously on initial landing
+    // Eagerly pre-load archives in background immediately on initial landing
     loadGoogleSheetsArchive();
 });
