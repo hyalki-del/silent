@@ -5,7 +5,7 @@
  * ==========================================================================
  */
 
-console.log("%c[SPENSE] Controller Engine Loaded.", "color: #059669; font-weight: bold;");
+console.log("%c[SPENSE] Engine & Controller Loaded Successfully.", "color: #059669; font-weight: bold;");
 
 // --- Global Application State ---
 let currentTab = null;
@@ -14,11 +14,6 @@ let currentLang = 'en';
 let currentCurrency = 'USD';
 let currentTheme = 'Silk';
 let ledgerData = { members: [], expenses: [] };
-
-// Settings Modal Staging State
-let selectedModalLang = 'en';
-let selectedModalCurrency = 'USD';
-let selectedModalTheme = 'Silk';
 
 // Staging & Edit State Variables
 let unsavedMembers = [];
@@ -36,40 +31,20 @@ const TRANSLATIONS = {
         amountLabel: "Amount", paidByLabel: "Paid By", splitBetweenLabel: "Split Between:", selectAllBtn: "Select All", 
         recordExpenseBtn: "Record Expense", updateExpenseBtn: "Update Expense", cancelEditBtn: "Cancel", deleteExpenseBtn: "Delete Expense",
         settlementTitle: "Settlement Matrix", copySummaryBtn: "Copy Summary",
-        historyTitle: "Ledger History", generateReportBtn: "Generate Report",
+        historyTitle: "Ledger History", clickToEditSub: "(Click item to edit)", generateReportBtn: "Generate Report",
         modalSub: "Create or open a confidential group ledger.", tabCreate: "Create New", tabRecall: "Recall Existing",
         ledgerNameLabel: "Ledger Name", ledgerNamePh: "e.g. dinner-club", setPinLabel: "Set 4-Digit PIN", initializeBtn: "Initialize Ledger",
         selectArchiveLabel: "Select Archive", enterPinLabel: "Enter 4-Digit PIN", accessLedgerBtn: "Access Ledger",
         shareLinkHeader: "Share Ledger Link", shareLinkSub: "Anyone with this link will only need to enter PIN.", copyBtn: "Copy",
-        activeLedgerLabel: "Active ledger:",
-        awaitingAuth: "AWAITING AUTHENTICATION...",
-        noParticipants: "No participants yet.",
-        noExpenses: "No expenses recorded yet.",
+        activeLedgerLabel: "Active ledger:", awaitingAuth: "AWAITING AUTHENTICATION...",
+        noParticipants: "No participants yet.", noExpenses: "No expenses recorded yet.",
         settlementPlaceholder: "Settlement matrix will appear once expenses are added.",
-        allSettled: "All balances are currently settled!",
-        owesText: "owes",
-        paidByText: "Paid by",
-        splitText: "Split:",
-        editItemBtn: "Edit",
-        noParticipantsOption: "No participants",
-        addParticipantsFirst: "Add participants first.",
-        reportTitle: "SPENSE LEDGER REPORT",
-        reportNameLabel: "Ledger Name",
-        reportGeneratedOn: "Generated On",
-        reportParticipants: "Participants",
-        reportTotalSpend: "Total Spend",
-        reportSettlementMatrix: "SETTLEMENT MATRIX",
-        reportHistoryTitle: "ITEMIZED TRANSACTION HISTORY",
-        reportPaidBy: "Paid By",
-        reportSplitWith: "Split With",
-        categories: {
-            "Food & Drink": "Food & Drink",
-            "Transport": "Transport",
-            "Accommodation": "Accommodation",
-            "Shopping": "Shopping",
-            "Entertainment": "Entertainment",
-            "Other": "Other"
-        },
+        allSettled: "All balances are currently settled!", owesText: "owes", paidByText: "Paid by", splitText: "Split:", editItemBtn: "Edit",
+        noParticipantsOption: "No participants", addParticipantsFirst: "Add participants first.",
+        reportTitle: "SPENSE LEDGER REPORT", reportNameLabel: "Ledger Name", reportGeneratedOn: "Generated On",
+        reportParticipants: "Participants", reportTotalSpend: "Total Spend", reportSettlementMatrix: "SETTLEMENT MATRIX",
+        reportHistoryTitle: "ITEMIZED TRANSACTION HISTORY", reportPaidBy: "Paid By", reportSplitWith: "Split With",
+        categories: { "Food & Drink": "Food & Drink", "Transport": "Transport", "Accommodation": "Accommodation", "Shopping": "Shopping", "Entertainment": "Entertainment", "Other": "Other" },
         taglines: [
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Spend simply.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Enjoy the moment. Leave tracking to SPENSE.</span>`,
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Just add what you spent.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Who paid? Who shares? SPENSE does the math.</span>`,
@@ -86,40 +61,20 @@ const TRANSLATIONS = {
         amountLabel: "Tutar", paidByLabel: "Ödeyen", splitBetweenLabel: "Paylaşanlar:", selectAllBtn: "Tümünü Seç", 
         recordExpenseBtn: "Harcamayı Kaydet", updateExpenseBtn: "Harcamayı Güncelle", cancelEditBtn: "İptal", deleteExpenseBtn: "Harcamayı Sil",
         settlementTitle: "Ödeme Matrisi", copySummaryBtn: "Özeti Kopyala",
-        historyTitle: "Geçmiş Kayıtlar", generateReportBtn: "Rapor Oluştur",
+        historyTitle: "Geçmiş Kayıtlar", clickToEditSub: "(Düzenlemek için tıkla)", generateReportBtn: "Rapor Oluştur",
         modalSub: "Gizli bir grup defteri oluşturun veya açın.", tabCreate: "Yeni Oluştur", tabRecall: "Var Olanı Aç",
         ledgerNameLabel: "Defter Adı", ledgerNamePh: "ör. aksam-yemegi", setPinLabel: "4 Haneli PIN Belirleyin", initializeBtn: "Defteri Başlat",
         selectArchiveLabel: "Arşiv Seç", enterPinLabel: "4 Haneli PIN Girin", accessLedgerBtn: "Deftere Eriş",
         shareLinkHeader: "Defter Bağlantısını Paylaş", shareLinkSub: "Bu bağlantıya sahip herkes PIN girmelidir.", copyBtn: "Kopyala",
-        activeLedgerLabel: "Aktif defter:",
-        awaitingAuth: "KİMLİK DOĞRULAMA BEKLENİYOR...",
-        noParticipants: "Henüz katılımcı yok.",
-        noExpenses: "Henüz harcama kaydedilmedi.",
+        activeLedgerLabel: "Aktif defter:", awaitingAuth: "KİMLİK DOĞRULAMA BEKLENİYOR...",
+        noParticipants: "Henüz katılımcı yok.", noExpenses: "Henüz harcama kaydedilmedi.",
         settlementPlaceholder: "Harcama eklendiğinde ödeme matrisi görünecektir.",
-        allSettled: "Tüm hesaplar kapatıldı!",
-        owesText: "borçlu:",
-        paidByText: "Ödeyen:",
-        splitText: "Paylaşanlar:",
-        editItemBtn: "Düzenle",
-        noParticipantsOption: "Katılımcı yok",
-        addParticipantsFirst: "Önce katılımcı ekleyin.",
-        reportTitle: "SPENSE DEFTER RAPORU",
-        reportNameLabel: "Defter Adı",
-        reportGeneratedOn: "Oluşturulma Tarihi",
-        reportParticipants: "Katılımcılar",
-        reportTotalSpend: "Toplam Harcama",
-        reportSettlementMatrix: "ÖDEME MATRİSİ",
-        reportHistoryTitle: "DETAYLI İŞLEM GEÇMİŞİ",
-        reportPaidBy: "Ödeyen",
-        reportSplitWith: "Paylaşanlar",
-        categories: {
-            "Food & Drink": "Yiyecek & İçecek",
-            "Transport": "Ulaşım",
-            "Accommodation": "Konaklama",
-            "Shopping": "Alışveriş",
-            "Entertainment": "Eğlence",
-            "Other": "Diğer"
-        },
+        allSettled: "Tüm hesaplar kapatıldı!", owesText: "borçlu:", paidByText: "Ödeyen:", splitText: "Paylaşanlar:", editItemBtn: "Düzenle",
+        noParticipantsOption: "Katılımcı yok", addParticipantsFirst: "Önce katılımcı ekleyin.",
+        reportTitle: "SPENSE DEFTER RAPORU", reportNameLabel: "Defter Adı", reportGeneratedOn: "Oluşturulma Tarihi",
+        reportParticipants: "Katılımcılar", reportTotalSpend: "Toplam Harcama", reportSettlementMatrix: "ÖDEME MATRİSİ",
+        reportHistoryTitle: "DETAYLI İŞLEM GEÇMİŞİ", reportPaidBy: "Ödeyen", reportSplitWith: "Paylaşanlar",
+        categories: { "Food & Drink": "Yiyecek & İçecek", "Transport": "Ulaşım", "Accommodation": "Konaklama", "Shopping": "Alışveriş", "Entertainment": "Eğlence", "Other": "Diğer" },
         taglines: [
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Kolayca harca.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Anın tadını çıkar. Takibi SPENSE'e bırak.</span>`,
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Sadece harcamanı ekle.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kim ödedi? Kimler paylaşıyor? Matematik işini SPENSE yapar.</span>`,
@@ -136,40 +91,20 @@ const TRANSLATIONS = {
         amountLabel: "Betrag", paidByLabel: "Bezahlt von", splitBetweenLabel: "Aufteilen:", selectAllBtn: "Alle", 
         recordExpenseBtn: "Speichern", updateExpenseBtn: "Aktualisieren", cancelEditBtn: "Abbrechen", deleteExpenseBtn: "Löschen",
         settlementTitle: "Abrechnungsmatrix", copySummaryBtn: "Kopieren",
-        historyTitle: "Verlauf", generateReportBtn: "Bericht Erstellen",
+        historyTitle: "Verlauf", clickToEditSub: "(Zum Bearbeiten anklicken)", generateReportBtn: "Bericht Erstellen",
         modalSub: "Gruppenbuch öffnen.", tabCreate: "Neu", tabRecall: "Öffnen",
         ledgerNameLabel: "Name", ledgerNamePh: "z.B. club", setPinLabel: "PIN", initializeBtn: "Starten",
         selectArchiveLabel: "Archiv Wählen", enterPinLabel: "PIN Eingeben", accessLedgerBtn: "Zugreifen",
         shareLinkHeader: "Teilen", shareLinkSub: "PIN erforderlich.", copyBtn: "Kopieren",
-        activeLedgerLabel: "Aktives Buch:",
-        awaitingAuth: "WARTE AUF AUTHENTIFIZIERUNG...",
-        noParticipants: "Noch keine Teilnehmer.",
-        noExpenses: "Noch keine Ausgaben erfasst.",
+        activeLedgerLabel: "Aktives Buch:", awaitingAuth: "WARTE AUF AUTHENTIFIZIERUNG...",
+        noParticipants: "Noch keine Teilnehmer.", noExpenses: "Noch keine Ausgaben erfasst.",
         settlementPlaceholder: "Die Abrechnungsmatrix erscheint, sobald Ausgaben hinzugefügt wurden.",
-        allSettled: "Alle Salden sind ausgeglichen!",
-        owesText: "schuldet",
-        paidByText: "Bezahlt von",
-        splitText: "Aufgeteilt mit:",
-        editItemBtn: "Bearbeiten",
-        noParticipantsOption: "Keine Teilnehmer",
-        addParticipantsFirst: "Zuerst Teilnehmer hinzufügen.",
-        reportTitle: "SPENSE BERICHT",
-        reportNameLabel: "Name des Buches",
-        reportGeneratedOn: "Erstellt am",
-        reportParticipants: "Teilnehmer",
-        reportTotalSpend: "Gesamtausgaben",
-        reportSettlementMatrix: "ABRECHNUNGSMATRIX",
-        reportHistoryTitle: "TRANSAKTIONSVERLAUF",
-        reportPaidBy: "Bezahlt von",
-        reportSplitWith: "Aufgeteilt mit",
-        categories: {
-            "Food & Drink": "Essen & Trinken",
-            "Transport": "Transport",
-            "Accommodation": "Unterkunft",
-            "Shopping": "Einkaufen",
-            "Entertainment": "Unterhaltung",
-            "Other": "Sonstiges"
-        },
+        allSettled: "Alle Salden sind ausgeglichen!", owesText: "schuldet", paidByText: "Bezahlt von", splitText: "Aufgeteilt mit:", editItemBtn: "Bearbeiten",
+        noParticipantsOption: "Keine Teilnehmer", addParticipantsFirst: "Zuerst Teilnehmer hinzufügen.",
+        reportTitle: "SPENSE BERICHT", reportNameLabel: "Name des Buches", reportGeneratedOn: "Erstellt am",
+        reportParticipants: "Teilnehmer", reportTotalSpend: "Gesamtausgaben", reportSettlementMatrix: "ABRECHNUNGSMATRIX",
+        reportHistoryTitle: "TRANSAKTIONSVERLAUF", reportPaidBy: "Bezahlt von", reportSplitWith: "Aufgeteilt mit",
+        categories: { "Food & Drink": "Essen & Trinken", "Transport": "Transport", "Accommodation": "Unterkunft", "Shopping": "Einkaufen", "Entertainment": "Unterhaltung", "Other": "Sonstiges" },
         taglines: [
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach ausgeben.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Genieße den Moment. Überlasse die Nachverfolgung SPENSE.</span>`,
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach eintragen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Wer hat bezahlt? Wer teilt es? SPENSE macht die Rechnung.</span>`,
@@ -213,44 +148,44 @@ function getLocalizedCategory(catKey) {
     return (t.categories && t.categories[catKey]) ? t.categories[catKey] : catKey;
 }
 
-function selectSettingsLang(lang) {
-    selectedModalLang = lang;
-    ['tr', 'en', 'de'].forEach(l => {
-        const btn = document.getElementById(`setLang${l.toUpperCase()}`);
-        if (btn) btn.className = l === lang ? "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected" : "theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
-    });
-}
-
-function selectSettingsCurrency(curr) {
-    selectedModalCurrency = curr;
-    ['USD', 'EUR', 'TRY'].forEach(c => {
-        const btn = document.getElementById(`setCurr${c}`);
-        if (btn) btn.className = c === curr ? "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer option-btn-selected" : "theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer opacity-50";
-    });
-}
-
-function selectSettingsTheme(theme) {
-    selectedModalTheme = theme;
-    const themeStyles = { Silk: 'bg-slate-50 text-slate-900', Toon: 'bg-amber-100 text-slate-900', Neon: 'bg-slate-950 text-cyan-400' };
-    ['Silk', 'Toon', 'Neon'].forEach(t => {
-        const btn = document.getElementById(`setTheme${t}`);
-        if (btn) btn.className = t === theme ? `theme-btn py-3 px-2 ${themeStyles[t]} rounded-xl text-center transition cursor-pointer option-btn-selected` : `theme-btn py-3 px-2 border-2 border-slate-200 ${themeStyles[t]} rounded-xl text-center transition cursor-pointer opacity-50`;
-    });
-}
-
+// --- SETTINGS SELECTION ENGINE (SYNCHRONIZED WITH INDEX.HTML) ---
 function openSettingsModal() { 
-    selectedModalLang = currentLang; selectedModalCurrency = currentCurrency; selectedModalTheme = currentTheme;
-    selectSettingsLang(selectedModalLang); selectSettingsCurrency(selectedModalCurrency); selectSettingsTheme(selectedModalTheme);
+    const langSelect = document.getElementById('settingsLangSelect');
+    const currSelect = document.getElementById('settingsCurrencySelect');
+    
+    if (langSelect) langSelect.value = currentLang;
+    if (currSelect) currSelect.value = currentCurrency;
+
+    const activeThemeRadio = document.querySelector(`input[name="modalThemeSelect"][value="${currentTheme}"]`);
+    if (activeThemeRadio) activeThemeRadio.checked = true;
+
     document.getElementById('settingsModal')?.classList.remove('hidden'); 
 }
 
-function closeSettingsModal() { document.getElementById('settingsModal')?.classList.add('hidden'); }
+function closeSettingsModal() { 
+    document.getElementById('settingsModal')?.classList.add('hidden'); 
+}
 
 async function saveSettings() {
-    currentLang = selectedModalLang; currentCurrency = selectedModalCurrency; applyTheme(selectedModalTheme);
+    const langSelect = document.getElementById('settingsLangSelect');
+    const currSelect = document.getElementById('settingsCurrencySelect');
+    const activeThemeRadio = document.querySelector('input[name="modalThemeSelect"]:checked');
+
+    if (langSelect) currentLang = langSelect.value;
+    if (currSelect) currentCurrency = currSelect.value;
+    if (activeThemeRadio) applyTheme(activeThemeRadio.value);
+
     document.getElementById('settingsModal')?.classList.add('hidden');
-    render(); initTaglineCarousel();
-    if (currentTab) await callBackend('updateSettings', { language: currentLang, currency: currentCurrency, theme: currentTheme });
+    render();
+    initTaglineCarousel();
+
+    if (currentTab) {
+        await callBackend('updateSettings', {
+            language: currentLang,
+            currency: currentCurrency,
+            theme: currentTheme
+        });
+    }
 }
 
 let taglineTimer = null, currentTaglineIndex = 0;
@@ -607,7 +542,13 @@ function generateLedgerReport() {
 
 function getCurrencySymbol() { return currentCurrency === 'EUR' ? '€' : currentCurrency === 'TRY' ? '₺' : '$'; }
 function applyTheme(themeName) { currentTheme = themeName; document.documentElement.setAttribute('data-theme', themeName.toLowerCase()); }
-function switchLanguage(lang) { currentLang = lang; render(); initTaglineCarousel(); }
+
+function switchLanguage(lang) { 
+    currentLang = lang; 
+    render(); 
+    initTaglineCarousel(); 
+}
+
 function selectAllSplits() { document.querySelectorAll('.split-checkbox').forEach(cb => cb.checked = true); }
 
 function render() {
@@ -615,23 +556,22 @@ function render() {
     document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (t[k]) el.innerText = t[k]; });
     document.querySelectorAll('[data-i18n-ph]').forEach(el => { const k = el.getAttribute('data-i18n-ph'); if (t[k]) el.placeholder = t[k]; });
 
-    const symbolEl = document.getElementById('currencySymbol');
-    if (symbolEl) symbolEl.innerText = getCurrencySymbol();
+    document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = getCurrencySymbol());
 
     const indicatorEl = document.getElementById('viewModeIndicator');
     if (indicatorEl) {
         indicatorEl.innerHTML = currentTab ? 
-            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
-            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${t.awaitingAuth || 'AWAITING AUTHENTICATION...'}</span>`;
+            `<span class="text-sm sm:text-base font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
+            `<span class="text-sm sm:text-base font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${t.awaitingAuth || 'AWAITING AUTHENTICATION...'}</span>`;
     }
 
-    ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings'].forEach(id => { document.getElementById(id)?.classList.toggle('hidden', !currentTab); });
+    ['deleteLedgerBtn', 'shareBtn', 'settingsBtn'].forEach(id => { document.getElementById(id)?.classList.toggle('hidden', !currentTab); });
 
     renderMembers(); renderExpenseFormHeader(); renderDropdowns(); renderSplitCheckboxes(); renderHistory(); renderSettlement();
 }
 
 function renderMembers() {
-    const container = document.getElementById('memberList'), saveBtn = document.getElementById('btnSaveMembers');
+    const container = document.getElementById('memberList'), saveBtn = document.getElementById('saveMembersBtn');
     if (!container) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     container.innerHTML = ledgerData.members.length > 0 
@@ -646,7 +586,7 @@ function renderMembers() {
 }
 
 function renderExpenseFormHeader() {
-    const titleEl = document.getElementById('expenseFormTitle'), subEl = document.getElementById('expenseFormSub'), actionsContainer = document.getElementById('expenseFormActions');
+    const titleEl = document.getElementById('expenseFormTitle'), subEl = document.getElementById('expenseFormSub'), actionsContainer = document.getElementById('expenseFormButtons');
     if (!titleEl || !subEl || !actionsContainer) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
 
@@ -752,7 +692,6 @@ function escapeHTML(str) {
 // Global Window Exports
 window.switchModalTab = switchModalTab; window.createNewLedger = createNewLedger; window.recallLedger = recallLedger;
 window.openSettingsModal = openSettingsModal; window.closeSettingsModal = closeSettingsModal;
-window.selectSettingsLang = selectSettingsLang; window.selectSettingsCurrency = selectSettingsCurrency; window.selectSettingsTheme = selectSettingsTheme;
 window.openShareModal = openShareModal; window.closeShareModal = closeShareModal; window.copyShareLink = copyShareLink;
 window.goHome = goHome; window.deleteActiveLedger = deleteActiveLedger; window.addMemberDirect = addMemberDirect;
 window.saveMembers = saveMembers; window.deleteMember = deleteMember; window.addExpense = addExpense;
@@ -762,8 +701,10 @@ window.generateLedgerReport = generateLedgerReport; window.switchLanguage = swit
 window.saveCardLayout = saveCardLayout; window.selectAllSplits = selectAllSplits; window.saveSettings = saveSettings;
 
 document.addEventListener('DOMContentLoaded', () => {
-    initTaglineCarousel(); initCardDragging();
+    initTaglineCarousel(); 
+    initCardDragging();
     const dateInput = document.getElementById('expenseDate');
     if (dateInput) dateInput.value = formatToISODate(new Date());
-    render(); loadGoogleSheetsArchive();
+    render(); 
+    loadGoogleSheetsArchive();
 });
