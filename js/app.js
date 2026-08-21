@@ -1,8 +1,7 @@
 /**
  * ==========================================================================
  * SPENSE - Group Expense Tracker Main Controller
- * CS Senior Architecture: Modular State Machine + Tagline Engine Restoration 
- *                        + Pristine Backend Routing Compatibility
+ * CS Senior Architecture: Integrated Monolithic i18n Engine & State Machine
  * ==========================================================================
  */
 
@@ -25,7 +24,7 @@ let selectedModalTheme = 'Silk';
 let unsavedMembers = [];
 let editingExpenseId = null;
 
-// --- Internationalization Dictionary ---
+// --- Comprehensive Internationalization Dictionary ---
 const TRANSLATIONS = {
     en: {
         settingsBtn: "⚙ Settings", shareLinkBtn: "Share Link", deleteBtn: "Delete",
@@ -42,6 +41,23 @@ const TRANSLATIONS = {
         ledgerNameLabel: "Ledger Name", ledgerNamePh: "e.g. dinner-club", setPinLabel: "Set 4-Digit PIN", initializeBtn: "Initialize Ledger",
         selectArchiveLabel: "Select Archive", enterPinLabel: "Enter 4-Digit PIN", accessLedgerBtn: "Access Ledger",
         shareLinkHeader: "Share Ledger Link", shareLinkSub: "Anyone with this link will only need to enter PIN.", copyBtn: "Copy",
+        activeLedgerLabel: "Active ledger:",
+        awaitingAuth: "AWAITING AUTHENTICATION...",
+        noParticipants: "No participants yet.",
+        noExpenses: "No expenses recorded yet.",
+        settlementPlaceholder: "Settlement matrix will appear once expenses are added.",
+        allSettled: "All balances are currently settled!",
+        owesText: "owes",
+        noParticipantsOption: "No participants",
+        addParticipantsFirst: "Add participants first.",
+        categories: {
+            "Food & Drink": "Food & Drink",
+            "Transport": "Transport",
+            "Accommodation": "Accommodation",
+            "Shopping": "Shopping",
+            "Entertainment": "Entertainment",
+            "Other": "Other"
+        },
         taglines: [
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Spend simply.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Enjoy the moment. Leave tracking to SPENSE.</span>`,
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Just add what you spent.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Who paid? Who shares? SPENSE does the math.</span>`,
@@ -63,6 +79,23 @@ const TRANSLATIONS = {
         ledgerNameLabel: "Defter Adı", ledgerNamePh: "ör. aksam-yemegi", setPinLabel: "4 Haneli PIN Belirleyin", initializeBtn: "Defteri Başlat",
         selectArchiveLabel: "Arşiv Seç", enterPinLabel: "4 Haneli PIN Girin", accessLedgerBtn: "Deftere Eriş",
         shareLinkHeader: "Defter Bağlantısını Paylaş", shareLinkSub: "Bu bağlantıya sahip herkes PIN girmelidir.", copyBtn: "Kopyala",
+        activeLedgerLabel: "Aktif defter:",
+        awaitingAuth: "KİMLİK DOĞRULAMA BEKLENİYOR...",
+        noParticipants: "Henüz katılımcı yok.",
+        noExpenses: "Henüz harcama kaydedilmedi.",
+        settlementPlaceholder: "Harcama eklendiğinde ödeme matrisi görünecektir.",
+        allSettled: "Tüm hesaplar kapatıldı!",
+        owesText: "borçlu:",
+        noParticipantsOption: "Katılımcı yok",
+        addParticipantsFirst: "Önce katılımcı ekleyin.",
+        categories: {
+            "Food & Drink": "Yiyecek & İçecek",
+            "Transport": "Ulaşım",
+            "Accommodation": "Konaklama",
+            "Shopping": "Alışveriş",
+            "Entertainment": "Eğlence",
+            "Other": "Diğer"
+        },
         taglines: [
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Kolayca harca.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Anın tadını çıkar. Takibi SPENSE'e bırak.</span>`,
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Sadece harcamanı ekle.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kim ödedi? Kimler paylaşıyor? Matematik işini SPENSE yapar.</span>`,
@@ -84,6 +117,23 @@ const TRANSLATIONS = {
         ledgerNameLabel: "Name", ledgerNamePh: "z.B. club", setPinLabel: "PIN", initializeBtn: "Starten",
         selectArchiveLabel: "Archiv Wählen", enterPinLabel: "PIN Eingeben", accessLedgerBtn: "Zugreifen",
         shareLinkHeader: "Teilen", shareLinkSub: "PIN erforderlich.", copyBtn: "Kopieren",
+        activeLedgerLabel: "Aktives Buch:",
+        awaitingAuth: "WARTE AUF AUTHENTIFIZIERUNG...",
+        noParticipants: "Noch keine Teilnehmer.",
+        noExpenses: "Noch keine Ausgaben erfasst.",
+        settlementPlaceholder: "Die Abrechnungsmatrix erscheint, sobald Ausgaben hinzugefügt wurden.",
+        allSettled: "Alle Salden sind ausgeglichen!",
+        owesText: "schuldet",
+        noParticipantsOption: "Keine Teilnehmer",
+        addParticipantsFirst: "Zuerst Teilnehmer hinzufügen.",
+        categories: {
+            "Food & Drink": "Essen & Trinken",
+            "Transport": "Transport",
+            "Accommodation": "Unterkunft",
+            "Shopping": "Einkaufen",
+            "Entertainment": "Unterhaltung",
+            "Other": "Sonstiges"
+        },
         taglines: [
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach ausgeben.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Genieße den Moment. Überlasse die Nachverfolgung SPENSE.</span>`,
             `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach eintragen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Wer hat bezahlt? Wer teilt es? SPENSE macht die Rechnung.</span>`,
@@ -141,6 +191,13 @@ function findMemberCanonical(targetName) {
     if (!targetName) return targetName;
     const match = ledgerData.members.find(m => m.toLowerCase() === targetName.toLowerCase());
     return match || targetName;
+}
+
+// Helper to sanitize category key
+function getLocalizedCategory(catKey) {
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    const catMap = t.categories || {};
+    return catMap[catKey] || catKey;
 }
 
 // --- SETTINGS SELECTION ENGINE ---
@@ -783,6 +840,7 @@ async function addExpense() {
 
 // --- CASE-INSENSITIVE SETTLEMENT COMPUTATION ALGORITHM ---
 function calculateSettlement() {
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     const balances = {};
     const lowerMap = {};
 
@@ -825,7 +883,7 @@ function calculateSettlement() {
     let i = 0, j = 0;
     while (i < debtors.length && j < creditors.length) {
         const minAmt = Math.min(debtors[i].amount, creditors[j].amount);
-        transactions.push(`${debtors[i].member} owes ${creditors[j].member} ${getCurrencySymbol()}${minAmt.toFixed(2)}`);
+        transactions.push(`${debtors[i].member} ${t.owesText || 'owes'} ${creditors[j].member} ${getCurrencySymbol()}${minAmt.toFixed(2)}`);
 
         debtors[i].amount -= minAmt;
         creditors[j].amount -= minAmt;
@@ -891,7 +949,7 @@ function generateLedgerReport() {
         ledgerData.expenses.forEach((e, idx) => {
             const splitArr = Array.isArray(e.splitWith) ? e.splitWith : (e.splitBetween || []);
             const splitStr = splitArr.map(s => findMemberCanonical(s)).join(', ');
-            report += `${idx + 1}. [${formatToISODate(e.date)}] ${e.desc} (${e.category})\n`;
+            report += `${idx + 1}. [${formatToISODate(e.date)}] ${e.desc} (${getLocalizedCategory(e.category)})\n`;
             report += `   Amount: ${sym}${parseFloat(e.amount).toFixed(2)} | Paid By: ${findMemberCanonical(e.paidBy)}\n`;
             report += `   Split With: ${splitStr}\n\n`;
         });
@@ -949,8 +1007,8 @@ function render() {
     const indicatorEl = document.getElementById('viewModeIndicator');
     if (indicatorEl) {
         indicatorEl.innerHTML = currentTab ? 
-            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
-            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">Active ledger:</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">AWAITING AUTHENTICATION...</span>`;
+            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
+            `<span class="text-sm font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${t.awaitingAuth || 'AWAITING AUTHENTICATION...'}</span>`;
     }
 
     ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings'].forEach(id => {
@@ -970,6 +1028,8 @@ function renderMembers() {
     const saveBtn = document.getElementById('btnSaveMembers');
     if (!container) return;
     
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+
     container.innerHTML = ledgerData.members.length > 0 
         ? ledgerData.members.map(m => `
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl ${unsavedMembers.includes(m) ? 'bg-amber-200 text-amber-900 border border-amber-400' : 'bg-slate-200 text-slate-800'} font-bold">
@@ -977,7 +1037,7 @@ function renderMembers() {
                 <button type="button" data-member="${escapeHTML(m)}" onclick="window.deleteMember(this.getAttribute('data-member'), event)" class="text-rose-600 hover:text-rose-800 font-black text-xs ml-1 cursor-pointer" title="Remove participant">×</button>
             </span>
         `).join('') 
-        : '<span class="opacity-60 italic">No participants yet.</span>';
+        : `<span class="opacity-60 italic">${t.noParticipants || 'No participants yet.'}</span>`;
 
     if (saveBtn) {
         if (unsavedMembers.length > 0) {
@@ -1020,23 +1080,29 @@ function renderDropdowns() {
     const paidSelect = document.getElementById('expensePaidBy');
     if (!catSelect || !paidSelect) return;
 
-    catSelect.innerHTML = ["Food & Drink", "Transport", "Accommodation", "Shopping", "Entertainment", "Other"].map(c => `<option value="${c}">${c}</option>`).join('');
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    const defaultCategories = ["Food & Drink", "Transport", "Accommodation", "Shopping", "Entertainment", "Other"];
+
+    catSelect.innerHTML = defaultCategories.map(catKey => {
+        const localizedLabel = getLocalizedCategory(catKey);
+        return `<option value="${catKey}">${escapeHTML(localizedLabel)}</option>`;
+    }).join('');
+
     paidSelect.innerHTML = ledgerData.members.length > 0 
         ? ledgerData.members.map(m => `<option value="${escapeHTML(m)}">${escapeHTML(m)}</option>`).join('')
-        : '<option value="">No participants</option>';
+        : `<option value="">${t.noParticipantsOption || 'No participants'}</option>`;
 }
 
 function renderSplitCheckboxes() {
     const container = document.getElementById('splitCheckboxes');
     if (!container) return;
 
-    // Retrieve active selection if user had manually toggled options during this render cycle
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     const currentCheckedEls = document.querySelectorAll('.split-checkbox:checked');
     const userSelectedValues = Array.from(currentCheckedEls).map(cb => cb.value.toLowerCase());
 
     container.innerHTML = ledgerData.members.length > 0
         ? ledgerData.members.map(m => {
-            // Generically select all participants by default unless explicit filtering is active
             const isChecked = editingExpenseId 
                 ? userSelectedValues.includes(m.toLowerCase())
                 : (userSelectedValues.length === 0 || userSelectedValues.includes(m.toLowerCase()));
@@ -1047,12 +1113,14 @@ function renderSplitCheckboxes() {
             </label>
             `;
         }).join('')
-        : '<span class="opacity-60 italic">Add participants first.</span>';
+        : `<span class="opacity-60 italic">${t.addParticipantsFirst || 'Add participants first.'}</span>`;
 }
 
 function renderHistory() {
     const list = document.getElementById('expenseHistory');
     if (!list) return;
+
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
 
     list.innerHTML = ledgerData.expenses.length > 0
         ? ledgerData.expenses.map(e => {
@@ -1060,11 +1128,12 @@ function renderHistory() {
             const canonicalPayer = findMemberCanonical(e.paidBy);
             const rawSplits = Array.isArray(e.splitWith) ? e.splitWith : (e.splitBetween || []);
             const displaySplits = rawSplits.map(s => findMemberCanonical(s)).join(', ');
+            const localizedCat = getLocalizedCategory(e.category);
 
             return `
             <li class="p-2.5 rounded-xl border border-current/15 flex justify-between items-center bg-current/5 gap-2">
                 <div class="flex-1 min-w-0">
-                    <span class="font-bold truncate block">${escapeHTML(e.desc)} (${escapeHTML(e.category)})</span>
+                    <span class="font-bold truncate block">${escapeHTML(e.desc)} (${escapeHTML(localizedCat)})</span>
                     <div class="text-[10px] opacity-70">Paid by <span class="font-bold">${escapeHTML(canonicalPayer)}</span> • ${displayDate} • Split: ${escapeHTML(displaySplits)}</div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -1074,22 +1143,24 @@ function renderHistory() {
             </li>
         `;
         }).join('')
-        : '<li class="opacity-60 italic text-center py-4">No expenses recorded yet.</li>';
+        : `<li class="opacity-60 italic text-center py-4">${t.noExpenses || 'No expenses recorded yet.'}</li>`;
 }
 
 function renderSettlement() {
     const container = document.getElementById('settlementList');
     if (!container) return;
 
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+
     if (ledgerData.expenses.length === 0 || ledgerData.members.length === 0) {
-        container.innerHTML = '<p class="opacity-60 italic text-center py-4">Settlement matrix will appear once expenses are added.</p>';
+        container.innerHTML = `<p class="opacity-60 italic text-center py-4">${t.settlementPlaceholder || 'Settlement matrix will appear once expenses are added.'}</p>`;
         return;
     }
 
     const txs = calculateSettlement();
     container.innerHTML = txs.length > 0 
-        ? txs.map(t => `<div class="p-2 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-xl font-bold">${escapeHTML(t)}</div>`).join('')
-        : '<p class="font-bold text-center py-2 text-emerald-600">All balances are currently settled!</p>';
+        ? txs.map(tStr => `<div class="p-2 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-xl font-bold">${escapeHTML(tStr)}</div>`).join('')
+        : `<p class="font-bold text-center py-2 text-emerald-600">${t.allSettled || 'All balances are currently settled!'}</p>`;
 }
 
 function escapeHTML(str) {
