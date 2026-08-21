@@ -394,7 +394,7 @@ async function callBackend(action, payload = {}) {
     }
 }
 
-// --- ARCHIVE LOADER WITH ASYNC BACKGROUND PREFETCH & LOCKING ---
+// --- ARCHIVE LOADER WITH ASYNC BACKGROUND PREFETCH & SYSTEM EXCLUSIONS ---
 async function loadGoogleSheetsArchive() {
     const select = document.getElementById('archiveSelect');
     if (!select) return;
@@ -422,9 +422,13 @@ async function loadGoogleSheetsArchive() {
             ledgers = rawData.archives || rawData.sheets || rawData.ledgers || Object.keys(rawData);
         }
 
+        // Strict Exclusion Filtering for System Sheets ('metadata' & 'counter')
         ledgers = ledgers
             .filter(Boolean)
-            .filter(name => name.toString().trim().toLowerCase() !== 'metadata');
+            .filter(name => {
+                const lower = name.toString().trim().toLowerCase();
+                return lower !== 'metadata' && lower !== 'counter' && lower !== '';
+            });
 
         if (ledgers.length === 0) {
             select.innerHTML = `<option value="">-- No archives found --</option>`;
@@ -917,6 +921,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateInput) dateInput.value = formatToISODate(new Date());
     render();
 
-    // Trigger background prefetching immediately on DOM load
+    // Trigger background prefetching immediately on DOM ready
     loadGoogleSheetsArchive();
 });
