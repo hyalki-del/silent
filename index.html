@@ -202,23 +202,19 @@
         </div>
     </div>
 
-    <!-- Welcome / Landing Modal (Optimized Compact Layout) -->
+    <!-- Welcome / Landing Modal -->
     <div id="welcomeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-3 pointer-events-auto">
         <div class="theme-card p-4 sm:p-5 max-w-md w-full space-y-3.5 shadow-2xl bg-white text-slate-900 pointer-events-auto">
             
-            <!-- Modal Header -->
             <div class="border-b border-slate-200 pb-3 text-center space-y-2">
-                <!-- Brand Logo -->
                 <div class="w-full max-w-[220px] mx-auto">
                     <img src="logo.png" alt="SPENSE Logo" class="w-full h-auto object-contain drop-shadow-md" onerror="this.src='https://placehold.co/220x80?text=SPENSE'">
                 </div>
 
-                <!-- Dynamic Sliding Tagline Container -->
                 <div class="py-1 min-h-[44px] flex items-center justify-center overflow-hidden">
                     <div id="taglineSpot" class="w-full text-center leading-tight"></div>
                 </div>
 
-                <!-- Language Selector -->
                 <div class="text-xs font-black tracking-wider text-slate-800 flex justify-center items-center gap-3 pt-1 uppercase">
                     <button id="btnLangTR" type="button" onclick="window.switchLanguage('tr')" class="hover:text-amber-600 cursor-pointer transition px-1">TÜRKÇE</button>
                     <span class="text-slate-300 font-normal">|</span>
@@ -228,13 +224,11 @@
                 </div>
             </div>
 
-            <!-- Modal Tab Controls -->
             <div id="modalTabsHeader" class="flex gap-2 p-1 bg-slate-100 rounded-xl">
                 <button id="tabCreateBtn" type="button" onclick="window.switchModalTab('create')" data-i18n="tabCreate" class="flex-1 theme-btn py-1.5 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-lg cursor-pointer">Create New</button>
                 <button id="tabRecallBtn" type="button" onclick="window.switchModalTab('recall')" data-i18n="tabRecall" class="flex-1 theme-btn py-1.5 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-lg cursor-pointer">Recall Existing</button>
             </div>
 
-            <!-- Create Section -->
             <div id="createSection" class="space-y-3">
                 <div class="space-y-1">
                     <label data-i18n="ledgerNameLabel" class="text-xs font-extrabold text-slate-800">Ledger Name</label>
@@ -247,7 +241,6 @@
                 <button id="btnInitializeLedger" type="button" onclick="window.createNewLedger()" data-i18n="initializeBtn" class="w-full theme-btn bg-lime-400 hover:bg-lime-500 text-slate-900 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Initialize Ledger</button>
             </div>
 
-            <!-- Recall Section -->
             <div id="recallSection" class="space-y-3 hidden">
                 <div class="space-y-1">
                     <label data-i18n="selectArchiveLabel" class="text-xs font-extrabold text-slate-800">Select Archive</label>
@@ -273,7 +266,6 @@
                 <button id="btnCloseSettings" type="button" onclick="window.closeSettingsModal()" class="text-slate-500 hover:text-slate-900 text-xl font-bold cursor-pointer">×</button>
             </div>
 
-            <!-- Language Option Buttons with SVG Flags -->
             <div class="space-y-2">
                 <label data-i18n="languageSettingLabel" class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Language</label>
                 <div class="grid grid-cols-3 gap-2">
@@ -292,7 +284,6 @@
                 </div>
             </div>
 
-            <!-- Currency Option Buttons -->
             <div class="space-y-2">
                 <label data-i18n="currencySettingLabel" class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Currency</label>
                 <div class="grid grid-cols-3 gap-2">
@@ -308,7 +299,6 @@
                 </div>
             </div>
 
-            <!-- Visual Template Buttons -->
             <div class="space-y-2">
                 <label data-i18n="themeSettingLabel" class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Visual Template</label>
                 <div class="grid grid-cols-3 gap-2">
@@ -343,7 +333,6 @@
         </div>
     </div>
 
-    <!-- Script Loader -->
     <script src="js/app.js" onerror="this.onerror=null; this.src='app.js';"></script>
 </body>
 </html>
