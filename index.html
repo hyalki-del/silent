@@ -30,6 +30,7 @@
         [data-theme="toon"] .theme-card { border: 3px solid var(--border-color); }
         .theme-header { border-bottom-width: 3px; }
 
+        /* --- HARDWARE-ACCELERATED 4-DIRECTIONAL KEYFRAME ENGINE --- */
         @keyframes animLeft {
             0% { transform: translateX(-120%); opacity: 0; }
             15%, 85% { transform: translateX(0); opacity: 1; }
@@ -82,6 +83,12 @@
 </head>
 <body class="min-h-screen p-3 sm:p-8 antialiased">
     <div class="max-w-5xl mx-auto space-y-6">
+        
+        <!-- Save Layout Notification Bar -->
+        <div id="layoutActionBar" class="hidden bg-amber-400 border-2 border-slate-900 text-slate-900 px-4 py-2.5 rounded-2xl font-black text-xs flex justify-between items-center shadow-[3px_3px_0px_#0f172a] animate-bounce">
+            <span>Layout modified! Save your new card arrangement to Google Sheets.</span>
+            <button id="btnSaveCardLayout" type="button" onclick="window.saveCardLayout()" class="bg-slate-900 text-amber-300 px-3 py-1 rounded-xl uppercase tracking-wider text-[10px] cursor-pointer hover:bg-slate-800">Save Layout</button>
+        </div>
 
         <div id="appContainer" class="space-y-6">
             
@@ -180,7 +187,7 @@
                 <div id="settlementList" class="space-y-2 text-xs min-h-[80px]"></div>
             </section>
 
-            <!-- Ledger History Card -->
+            <!-- History Card -->
             <section class="theme-card p-6 space-y-4" data-card-id="history">
                 <div class="card-drag-handle" draggable="true" title="Drag to reorder card">⠿</div>
                 <div class="flex justify-between items-center border-b border-current/10 pb-3 pr-8 flex-wrap gap-2">
@@ -188,32 +195,31 @@
                         <h2 data-i18n="historyTitle" class="text-xs font-black uppercase tracking-wider opacity-70">Ledger History</h2>
                         <span data-i18n="clickToEditSub" class="text-[10px] opacity-70 italic font-medium">(Click item to edit)</span>
                     </div>
-                    <button id="btnGenerateReport" 
-                            type="button" 
-                            onclick="window.generateLedgerReport()" 
-                            data-i18n="generateReportBtn" 
-                            class="relative z-10 theme-btn bg-amber-300 hover:bg-amber-400 text-slate-900 text-xs px-3.5 py-2 font-black uppercase tracking-wider cursor-pointer shadow-sm transition-all active:scale-95">
-                        Generate Report
-                    </button>
+                    <button id="btnGenerateReport" type="button" onclick="window.generateLedgerReport()" data-i18n="generateReportBtn" class="relative z-10 theme-btn bg-amber-300 hover:bg-amber-400 text-slate-900 text-xs px-3.5 py-2 font-black uppercase tracking-wider cursor-pointer shadow-sm transition-all active:scale-95">Generate Report</button>
                 </div>
                 <ul id="expenseHistory" class="space-y-2 text-xs min-h-[100px] max-h-[300px] overflow-y-auto pr-1"></ul>
             </section>
         </div>
     </div>
 
-    <!-- Welcome Modal -->
-    <div id="welcomeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 pointer-events-auto">
-        <div class="theme-card p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl bg-white text-slate-900 pointer-events-auto">
-            <div class="border-b border-slate-200 pb-5 text-center space-y-4">
-                <div class="w-full max-w-[320px] mx-auto py-1">
-                    <img src="logo.png" alt="SPENSE Logo" class="w-full h-auto object-contain drop-shadow-md" onerror="this.src='https://placehold.co/300x120?text=SPENSE'">
+    <!-- Welcome / Landing Modal (Optimized Compact Layout) -->
+    <div id="welcomeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-3 pointer-events-auto">
+        <div class="theme-card p-4 sm:p-5 max-w-md w-full space-y-3.5 shadow-2xl bg-white text-slate-900 pointer-events-auto">
+            
+            <!-- Modal Header -->
+            <div class="border-b border-slate-200 pb-3 text-center space-y-2">
+                <!-- Brand Logo -->
+                <div class="w-full max-w-[220px] mx-auto">
+                    <img src="logo.png" alt="SPENSE Logo" class="w-full h-auto object-contain drop-shadow-md" onerror="this.src='https://placehold.co/220x80?text=SPENSE'">
                 </div>
 
-                <div class="py-2 min-h-[110px] flex items-center justify-center overflow-hidden">
-                    <div id="taglineSpot" class="w-full text-center leading-snug"></div>
+                <!-- Dynamic Sliding Tagline Container -->
+                <div class="py-1 min-h-[44px] flex items-center justify-center overflow-hidden">
+                    <div id="taglineSpot" class="w-full text-center leading-tight"></div>
                 </div>
 
-                <div class="text-sm sm:text-base font-black tracking-widest text-slate-800 flex justify-center items-center gap-4 sm:gap-6 pt-2 uppercase">
+                <!-- Language Selector -->
+                <div class="text-xs font-black tracking-wider text-slate-800 flex justify-center items-center gap-3 pt-1 uppercase">
                     <button id="btnLangTR" type="button" onclick="window.switchLanguage('tr')" class="hover:text-amber-600 cursor-pointer transition px-1">TÜRKÇE</button>
                     <span class="text-slate-300 font-normal">|</span>
                     <button id="btnLangEN" type="button" onclick="window.switchLanguage('en')" class="hover:text-amber-600 cursor-pointer transition px-1">ENGLISH</button>
@@ -222,36 +228,40 @@
                 </div>
             </div>
 
-            <div id="modalTabsHeader" class="flex gap-2 p-1 bg-slate-100 rounded-2xl">
-                <button id="tabCreateBtn" type="button" onclick="window.switchModalTab('create')" data-i18n="tabCreate" class="flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-xl cursor-pointer">Create New</button>
-                <button id="tabRecallBtn" type="button" onclick="window.switchModalTab('recall')" data-i18n="tabRecall" class="flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer">Recall Existing</button>
+            <!-- Modal Tab Controls -->
+            <div id="modalTabsHeader" class="flex gap-2 p-1 bg-slate-100 rounded-xl">
+                <button id="tabCreateBtn" type="button" onclick="window.switchModalTab('create')" data-i18n="tabCreate" class="flex-1 theme-btn py-1.5 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-lg cursor-pointer">Create New</button>
+                <button id="tabRecallBtn" type="button" onclick="window.switchModalTab('recall')" data-i18n="tabRecall" class="flex-1 theme-btn py-1.5 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-lg cursor-pointer">Recall Existing</button>
             </div>
 
-            <div id="createSection" class="space-y-4">
+            <!-- Create Section -->
+            <div id="createSection" class="space-y-3">
                 <div class="space-y-1">
                     <label data-i18n="ledgerNameLabel" class="text-xs font-extrabold text-slate-800">Ledger Name</label>
-                    <input type="text" id="newLedgerName" data-i18n-ph="ledgerNamePh" placeholder="e.g. dinner-club" class="w-full theme-input px-3 py-2 text-sm" onkeypress="if(event.key==='Enter') window.createNewLedger()">
+                    <input type="text" id="newLedgerName" data-i18n-ph="ledgerNamePh" placeholder="e.g. dinner-club" class="w-full theme-input px-3 py-1.5 text-sm" onkeypress="if(event.key==='Enter') window.createNewLedger()">
                 </div>
                 <div class="space-y-1">
                     <label data-i18n="setPinLabel" class="text-xs font-extrabold text-slate-800">Set 4-Digit PIN</label>
-                    <input type="text" id="newLedgerPin" maxlength="4" placeholder="1234" class="w-full theme-input px-3 py-2 text-sm font-mono tracking-widest" onkeypress="if(event.key==='Enter') window.createNewLedger()">
+                    <input type="text" id="newLedgerPin" maxlength="4" placeholder="1234" class="w-full theme-input px-3 py-1.5 text-sm font-mono tracking-widest" onkeypress="if(event.key==='Enter') window.createNewLedger()">
                 </div>
-                <button id="btnInitializeLedger" type="button" onclick="window.createNewLedger()" data-i18n="initializeBtn" class="w-full theme-btn bg-lime-400 hover:bg-lime-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Initialize Ledger</button>
+                <button id="btnInitializeLedger" type="button" onclick="window.createNewLedger()" data-i18n="initializeBtn" class="w-full theme-btn bg-lime-400 hover:bg-lime-500 text-slate-900 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Initialize Ledger</button>
             </div>
 
-            <div id="recallSection" class="space-y-4 hidden">
+            <!-- Recall Section -->
+            <div id="recallSection" class="space-y-3 hidden">
                 <div class="space-y-1">
                     <label data-i18n="selectArchiveLabel" class="text-xs font-extrabold text-slate-800">Select Archive</label>
-                    <select id="archiveSelect" class="w-full theme-input px-3 py-2 text-sm cursor-pointer">
+                    <select id="archiveSelect" class="w-full theme-input px-3 py-1.5 text-sm cursor-pointer">
                         <option value="">-- Loading Archives... --</option>
                     </select>
                 </div>
                 <div class="space-y-1">
                     <label data-i18n="enterPinLabel" class="text-xs font-extrabold text-slate-800">Enter 4-Digit PIN</label>
-                    <input type="text" id="recallLedgerPin" maxlength="4" placeholder="1234" class="w-full theme-input px-3 py-2 text-sm font-mono tracking-widest" onkeypress="if(event.key==='Enter') window.recallLedger()">
+                    <input type="text" id="recallLedgerPin" maxlength="4" placeholder="1234" class="w-full theme-input px-3 py-1.5 text-sm font-mono tracking-widest" onkeypress="if(event.key==='Enter') window.recallLedger()">
                 </div>
-                <button id="btnAccessLedger" type="button" onclick="window.recallLedger()" data-i18n="accessLedgerBtn" class="w-full theme-btn bg-cyan-400 hover:bg-cyan-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Access Ledger</button>
+                <button id="btnAccessLedger" type="button" onclick="window.recallLedger()" data-i18n="accessLedgerBtn" class="w-full theme-btn bg-cyan-400 hover:bg-cyan-500 text-slate-900 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Access Ledger</button>
             </div>
+
         </div>
     </div>
 
@@ -263,30 +273,54 @@
                 <button id="btnCloseSettings" type="button" onclick="window.closeSettingsModal()" class="text-slate-500 hover:text-slate-900 text-xl font-bold cursor-pointer">×</button>
             </div>
 
+            <!-- Language Option Buttons with SVG Flags -->
             <div class="space-y-2">
                 <label data-i18n="languageSettingLabel" class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Language</label>
                 <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="window.selectSettingsLang('tr')" id="setLangTR" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">TÜRKÇE</button>
-                    <button type="button" onclick="window.selectSettingsLang('en')" id="setLangEN" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">ENGLISH</button>
-                    <button type="button" onclick="window.selectSettingsLang('de')" id="setLangDE" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">DEUTSCH</button>
+                    <button type="button" onclick="window.selectSettingsLang('tr')" id="setLangTR" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">
+                        <svg class="w-5 h-3.5 rounded-xs shadow-xs" viewBox="0 0 1200 800" fill="none"><rect width="1200" height="800" fill="#E30A17"/><circle cx="425" cy="400" r="200" fill="#FFFFFF"/><circle cx="475" cy="400" r="160" fill="#E30A17"/><path d="M583.333 400L700 437.938L627.915 338.73L627.915 461.27L700 362.062L583.333 400Z" fill="#FFFFFF"/></svg>
+                        TÜRKÇE
+                    </button>
+                    <button type="button" onclick="window.selectSettingsLang('en')" id="setLangEN" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">
+                        <svg class="w-5 h-3.5 rounded-xs shadow-xs" viewBox="0 0 60 30" fill="none"><clipPath id="a"><path d="M0 0h60v30H0z"/></clipPath><g clip-path="url(#a)"><path d="M0 0h60v30H0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></g></svg>
+                        ENGLISH
+                    </button>
+                    <button type="button" onclick="window.selectSettingsLang('de')" id="setLangDE" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">
+                        <svg class="w-5 h-3.5 rounded-xs shadow-xs" viewBox="0 0 5 3" fill="none"><rect width="5" height="1" fill="#000"/><rect y="1" width="5" height="1" fill="#D00"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg>
+                        DEUTSCH
+                    </button>
                 </div>
             </div>
 
+            <!-- Currency Option Buttons -->
             <div class="space-y-2">
                 <label data-i18n="currencySettingLabel" class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Currency</label>
                 <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="window.selectSettingsCurrency('USD')" id="setCurrUSD" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer"><span class="text-base font-black">$</span> USD</button>
-                    <button type="button" onclick="window.selectSettingsCurrency('EUR')" id="setCurrEUR" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer"><span class="text-base font-black">€</span> EUR</button>
-                    <button type="button" onclick="window.selectSettingsCurrency('TRY')" id="setCurrTRY" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer"><span class="text-base font-black">₺</span> TRY</button>
+                    <button type="button" onclick="window.selectSettingsCurrency('USD')" id="setCurrUSD" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">
+                        <span class="text-base font-black">$</span> USD
+                    </button>
+                    <button type="button" onclick="window.selectSettingsCurrency('EUR')" id="setCurrEUR" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">
+                        <span class="text-base font-black">€</span> EUR
+                    </button>
+                    <button type="button" onclick="window.selectSettingsCurrency('TRY')" id="setCurrTRY" class="theme-btn py-2.5 px-3 flex items-center justify-center gap-1.5 text-xs font-extrabold border-2 border-slate-200 rounded-xl hover:border-slate-400 bg-slate-50 transition cursor-pointer">
+                        <span class="text-base font-black">₺</span> TRY
+                    </button>
                 </div>
             </div>
 
+            <!-- Visual Template Buttons -->
             <div class="space-y-2">
                 <label data-i18n="themeSettingLabel" class="text-xs font-extrabold text-slate-800 block uppercase tracking-wider">Visual Template</label>
                 <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="window.selectSettingsTheme('Silk')" id="setThemeSilk" class="theme-btn py-3 px-2 border-2 border-slate-200 bg-slate-50 rounded-xl text-center transition cursor-pointer"><span class="block text-xs font-black font-sans text-slate-900">Silk</span></button>
-                    <button type="button" onclick="window.selectSettingsTheme('Toon')" id="setThemeToon" class="theme-btn py-3 px-2 border-2 border-slate-200 bg-amber-100 rounded-xl text-center transition cursor-pointer"><span class="block text-xs font-black font-serif text-slate-900">Toon</span></button>
-                    <button type="button" onclick="window.selectSettingsTheme('Neon')" id="setThemeNeon" class="theme-btn py-3 px-2 border-2 border-slate-200 bg-slate-950 rounded-xl text-center transition cursor-pointer"><span class="block text-xs font-black font-mono text-cyan-400">Neon</span></button>
+                    <button type="button" onclick="window.selectSettingsTheme('Silk')" id="setThemeSilk" class="theme-btn py-3 px-2 border-2 border-slate-200 bg-slate-50 rounded-xl text-center transition cursor-pointer">
+                        <span class="block text-xs font-black font-sans text-slate-900">Silk</span>
+                    </button>
+                    <button type="button" onclick="window.selectSettingsTheme('Toon')" id="setThemeToon" class="theme-btn py-3 px-2 border-2 border-slate-200 bg-amber-100 rounded-xl text-center transition cursor-pointer">
+                        <span class="block text-xs font-black font-serif text-slate-900">Toon</span>
+                    </button>
+                    <button type="button" onclick="window.selectSettingsTheme('Neon')" id="setThemeNeon" class="theme-btn py-3 px-2 border-2 border-slate-200 bg-slate-950 rounded-xl text-center transition cursor-pointer">
+                        <span class="block text-xs font-black font-mono text-cyan-400">Neon</span>
+                    </button>
                 </div>
             </div>
 
@@ -309,6 +343,7 @@
         </div>
     </div>
 
+    <!-- Script Loader -->
     <script src="js/app.js" onerror="this.onerror=null; this.src='app.js';"></script>
 </body>
 </html>
