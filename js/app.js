@@ -21,6 +21,10 @@ let selectedModalTheme = 'Silk';
 let unsavedMembers = [];
 let editingExpenseId = null;
 
+// Async Background Prefetching Flags
+let isArchiveLoaded = false;
+let isArchiveLoading = false;
+
 // --- Multilingual Dictionary ---
 var TRANSLATIONS = {
     en: {
@@ -92,7 +96,7 @@ var TRANSLATIONS = {
         settlementPlaceholder: "Harcamalar eklendikten sonra ödeme matrisi görünecektir.", allBalancesSettled: "Tüm borçlar kapatılmıştır!",
         settlementTpl: "{debtor}, {creditor} adlı kişiye {amount} ödeyecek.",
         modalSub: "Gizli bir grup hesabı oluşturun veya açın.", tabCreate: "Yeni Oluştur", tabRecall: "Var Olanı Aç",
-        ledgerNameLabel: "Hesap Adı", ledgerNamePh: "ör. aksam-yemegi", setPinLabel: "4 Haneli PIN Belirleyin", initializeBtn: "Hesapi Başlat",
+        ledgerNameLabel: "Hesap Adı", ledgerNamePh: "ör. aksam-yemegi", setPinLabel: "4 Haneli PIN Belirleyin", initializeBtn: "Hesabı Başlat",
         selectArchiveLabel: "Arşiv Seç", enterPinLabel: "4 Haneli PIN Girin", accessLedgerBtn: "Hesaba Eriş",
         shareLinkHeader: "Hesap Bağlantısını Paylaş", shareLinkSub: "Bu bağlantıya sahip herkes PIN girmelidir.", copyBtn: "Kopyala",
         ledgerSettingsHeader: "Hesap Ayarları", languageSettingLabel: "Dil", currencySettingLabel: "Para Birimi", themeSettingLabel: "Görsel Tema", saveSettingsBtn: "Ayarları Kaydet",
@@ -390,23 +394,50 @@ async function callBackend(action, payload = {}) {
     }
 }
 
+// --- ARCHIVE LOADER WITH ASYNC BACKGROUND PREFETCH & LOCKING ---
 async function loadGoogleSheetsArchive() {
     const select = document.getElementById('archiveSelect');
     if (!select) return;
-    select.innerHTML = `<option value="">-- Reading Archives... --</option>`;
+
+    if (isArchiveLoaded || isArchiveLoading) return;
+    isArchiveLoading = true;
 
     try {
         const sheetUrl = await getConfig();
-        if (!sheetUrl) return;
-        const res = await fetch(sheetUrl);
-        const rawData = await res.json();
-        let ledgers = Array.isArray(rawData) ? rawData : (rawData.archives || Object.keys(rawData));
-        ledgers = ledgers.filter(Boolean).filter(name => name.toString().trim().toLowerCase() !== 'metadata');
+        if (!sheetUrl) {
+            select.innerHTML = `<option value="">-- Missing sheetUrl in config.json --</option>`;
+            isArchiveLoading = false;
+            return;
+        }
 
-        select.innerHTML = `<option value="">-- Select Ledger --</option>` + 
-            ledgers.map(name => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
+        const res = await fetch(sheetUrl);
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+
+        const rawData = await res.json();
+        let ledgers = [];
+
+        if (Array.isArray(rawData)) {
+            ledgers = rawData;
+        } else if (typeof rawData === 'object' && rawData !== null) {
+            ledgers = rawData.archives || rawData.sheets || rawData.ledgers || Object.keys(rawData);
+        }
+
+        ledgers = ledgers
+            .filter(Boolean)
+            .filter(name => name.toString().trim().toLowerCase() !== 'metadata');
+
+        if (ledgers.length === 0) {
+            select.innerHTML = `<option value="">-- No archives found --</option>`;
+        } else {
+            select.innerHTML = `<option value="">-- Select Ledger --</option>` + 
+                ledgers.map(name => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
+            isArchiveLoaded = true;
+        }
     } catch (error) {
+        console.error("Archive fetch error:", error);
         select.innerHTML = `<option value="">-- Archive Load Error --</option>`;
+    } finally {
+        isArchiveLoading = false;
     }
 }
 
@@ -416,17 +447,22 @@ function switchModalTab(tabMode) {
     const tabCreateBtn = document.getElementById('tabCreateBtn');
     const tabRecallBtn = document.getElementById('tabRecallBtn');
 
+    if (!createSec || !recallSec) return;
+
     if (tabMode === 'create') {
-        createSec?.classList.remove('hidden');
-        recallSec?.classList.add('hidden');
+        createSec.classList.remove('hidden');
+        recallSec.classList.add('hidden');
         if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-xl cursor-pointer";
         if (tabRecallBtn) tabRecallBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer";
     } else {
-        createSec?.classList.add('hidden');
-        recallSec?.classList.remove('hidden');
+        createSec.classList.add('hidden');
+        recallSec.classList.remove('hidden');
         if (tabRecallBtn) tabRecallBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-xl cursor-pointer";
         if (tabCreateBtn) tabCreateBtn.className = "flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer";
-        loadGoogleSheetsArchive();
+
+        if (!isArchiveLoaded && !isArchiveLoading) {
+            loadGoogleSheetsArchive();
+        }
     }
 }
 
@@ -880,5 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('expenseDate');
     if (dateInput) dateInput.value = formatToISODate(new Date());
     render();
+
+    // Trigger background prefetching immediately on DOM load
     loadGoogleSheetsArchive();
 });
