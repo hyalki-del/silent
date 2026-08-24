@@ -148,7 +148,7 @@ function getLocalizedCategory(catKey) {
     return (t.categories && t.categories[catKey]) ? t.categories[catKey] : catKey;
 }
 
-// --- SETTINGS SELECTION ENGINE (SYNCHRONIZED WITH INDEX.HTML) ---
+// --- SETTINGS SELECTION ENGINE ---
 function openSettingsModal() { 
     const langSelect = document.getElementById('settingsLangSelect');
     const currSelect = document.getElementById('settingsCurrencySelect');
@@ -384,9 +384,18 @@ async function deleteMember(name, event) {
 function startEditExpense(id) {
     const exp = ledgerData.expenses.find(e => e.id.toString() === id.toString());
     if (!exp) return;
+    
+    // 1. Set active edit state
     editingExpenseId = id.toString();
-    const dateInput = document.getElementById('expenseDate'), descInput = document.getElementById('expenseDesc');
-    const amountInput = document.getElementById('expenseAmount'), catInput = document.getElementById('expenseCategory');
+
+    // 2. Render UI to populate dropdowns and update action buttons
+    render();
+
+    // 3. Set input values after options have been rendered
+    const dateInput = document.getElementById('expenseDate');
+    const descInput = document.getElementById('expenseDesc');
+    const amountInput = document.getElementById('expenseAmount');
+    const catInput = document.getElementById('expenseCategory');
     const paidByInput = document.getElementById('expensePaidBy');
 
     if (dateInput) dateInput.value = formatToISODate(exp.date);
@@ -395,9 +404,13 @@ function startEditExpense(id) {
     if (catInput) catInput.value = exp.category || 'Food & Drink';
     if (paidByInput) paidByInput.value = findMemberCanonical(exp.paidBy) || '';
 
-    render();
+    // 4. Restore checkboxes state for split members
     const splitArr = (Array.isArray(exp.splitWith) ? exp.splitWith : (exp.splitBetween || [])).map(s => s.toLowerCase());
-    document.querySelectorAll('.split-checkbox').forEach(cb => { cb.checked = splitArr.includes(cb.value.toLowerCase()); });
+    document.querySelectorAll('.split-checkbox').forEach(cb => { 
+        cb.checked = splitArr.includes(cb.value.toLowerCase()); 
+    });
+
+    // 5. Focus view on expense form
     document.getElementById('expenseFormSection')?.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -565,7 +578,7 @@ function render() {
             `<span class="text-sm sm:text-base font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${t.awaitingAuth || 'AWAITING AUTHENTICATION...'}</span>`;
     }
 
-    ['deleteLedgerBtn', 'shareBtn', 'settingsBtn'].forEach(id => { document.getElementById(id)?.classList.toggle('hidden', !currentTab); });
+    ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings'].forEach(id => { document.getElementById(id)?.classList.toggle('hidden', !currentTab); });
 
     renderMembers(); renderExpenseFormHeader(); renderDropdowns(); renderSplitCheckboxes(); renderHistory(); renderSettlement();
 }
@@ -586,10 +599,10 @@ function renderMembers() {
 }
 
 function renderExpenseFormHeader() {
-    const titleEl = document.getElementById('expenseFormTitle'), 
-          subEl = document.getElementById('expenseFormSub'), 
-          actionsContainer = document.getElementById('expenseFormActions'); // Fixed ID mismatch
-          
+    const titleEl = document.getElementById('expenseFormTitle');
+    const subEl = document.getElementById('expenseFormSub');
+    const actionsContainer = document.getElementById('expenseFormActions');
+    
     if (!titleEl || !subEl || !actionsContainer) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
 
@@ -613,8 +626,14 @@ function renderExpenseFormHeader() {
 }
 
 function renderDropdowns() {
-    const catSelect = document.getElementById('expenseCategory'), paidSelect = document.getElementById('expensePaidBy');
+    const catSelect = document.getElementById('expenseCategory');
+    const paidSelect = document.getElementById('expensePaidBy');
     if (!catSelect || !paidSelect) return;
+
+    // Retain explicit option states across DOM redraws
+    const currentPaidBy = paidSelect.value;
+    const currentCat = catSelect.value;
+
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     const defaultCategories = ["Food & Drink", "Transport", "Accommodation", "Shopping", "Entertainment", "Other"];
 
@@ -622,6 +641,9 @@ function renderDropdowns() {
     paidSelect.innerHTML = ledgerData.members.length > 0 
         ? ledgerData.members.map(m => `<option value="${escapeHTML(m)}">${escapeHTML(m)}</option>`).join('')
         : `<option value="">${t.noParticipantsOption || 'No participants'}</option>`;
+
+    if (currentPaidBy) paidSelect.value = currentPaidBy;
+    if (currentCat) catSelect.value = currentCat;
 }
 
 function renderSplitCheckboxes() {
