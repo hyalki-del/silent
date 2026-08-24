@@ -586,12 +586,16 @@ function renderMembers() {
 }
 
 function renderExpenseFormHeader() {
-    const titleEl = document.getElementById('expenseFormTitle'), subEl = document.getElementById('expenseFormSub'), actionsContainer = document.getElementById('expenseFormButtons');
+    const titleEl = document.getElementById('expenseFormTitle'), 
+          subEl = document.getElementById('expenseFormSub'), 
+          actionsContainer = document.getElementById('expenseFormActions'); // Fixed ID mismatch
+          
     if (!titleEl || !subEl || !actionsContainer) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
 
     if (editingExpenseId) {
-        titleEl.innerText = t.editExpenseTitle; subEl.innerText = t.editExpenseSub;
+        titleEl.innerText = t.editExpenseTitle; 
+        subEl.innerText = t.editExpenseSub;
         actionsContainer.innerHTML = `
             <div class="grid grid-cols-3 gap-2">
                 <button type="button" onclick="window.deleteExpenseFromEdit()" class="theme-btn bg-rose-500 hover:bg-rose-600 text-white py-3 text-xs font-black uppercase tracking-wider cursor-pointer rounded-xl">${t.deleteExpenseBtn}</button>
@@ -600,7 +604,8 @@ function renderExpenseFormHeader() {
             </div>
         `;
     } else {
-        titleEl.innerText = t.newExpenseTitle; subEl.innerText = t.newExpenseSub;
+        titleEl.innerText = t.newExpenseTitle; 
+        subEl.innerText = t.newExpenseSub;
         actionsContainer.innerHTML = `
             <button id="btnRecordExpense" type="button" onclick="window.addExpense()" data-i18n="recordExpenseBtn" class="w-full theme-btn py-3 text-sm font-extrabold cursor-pointer rounded-xl">${t.recordExpenseBtn}</button>
         `;
