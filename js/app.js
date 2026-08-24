@@ -19,7 +19,7 @@ let ledgerData = { members: [], expenses: [] };
 let unsavedMembers = [];
 let editingExpenseId = null;
 
-// Settings Staging State
+// Settings Staging State Variables
 let stagedLang = 'en';
 let stagedCurrency = 'USD';
 let stagedTheme = 'Silk';
@@ -287,9 +287,10 @@ function initCardDragging() {
                 parent.replaceChild(dragged, card); 
                 parent.replaceChild(card, tempNode);
 
-                // Auto-save card arrangement as soon as drop completes
+                // Auto-save arrangement directly to Google Sheets backend
                 if (currentTab) {
-                    await callBackend('updateSettings', { cardOrder: getCurrentCardOrder() });
+                    const newOrder = getCurrentCardOrder();
+                    await callBackend('updateSettings', { cardOrder: newOrder });
                 }
             }
         });
@@ -387,16 +388,28 @@ async function recallLedger() {
         const res = await fetch(`${sheetUrl}?tab=${encodeURIComponent(targetLedger)}&pin=${encodeURIComponent(pinVal)}`);
         const data = await res.json();
         if (data.status === "success") {
-            currentTab = targetLedger; currentPin = pinVal; currentTheme = data.theme || "Silk"; currentCurrency = data.currency || "USD"; currentLang = data.language || "en";
+            currentTab = targetLedger; 
+            currentPin = pinVal; 
+            currentTheme = data.theme || "Silk"; 
+            currentCurrency = data.currency || "USD"; 
+            currentLang = data.language || "en";
+            
             applyTheme(currentTheme);
-            if (data.cardOrder) applyCardOrder(data.cardOrder);
+            
             const rawMembers = Array.isArray(data.members) ? data.members : [];
             const cleanServerMembers = rawMembers.map(m => (m || '').toString().trim()).filter(m => m.length > 0 && m.toLowerCase() !== 'members');
             const memberMap = new Map();
             [...cleanServerMembers, ...unsavedMembers].forEach(m => { if (!memberMap.has(m.toLowerCase())) memberMap.set(m.toLowerCase(), m); });
             ledgerData.members = Array.from(memberMap.values());
             ledgerData.expenses = data.expenses || [];
-            document.getElementById('welcomeModal')?.classList.add('hidden'); render();
+            
+            document.getElementById('welcomeModal')?.classList.add('hidden'); 
+            
+            // Render first to construct the full interface DOM, then reorder cards safely
+            render();
+            if (data.cardOrder) {
+                applyCardOrder(data.cardOrder);
+            }
         } else alert("Authentication failed: " + (data.message || "Invalid PIN"));
     } catch (err) { alert("Failed to connect to backend ledger archive."); }
 }
@@ -630,7 +643,9 @@ function render() {
     document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (t[k]) el.innerText = t[k]; });
     document.querySelectorAll('[data-i18n-ph]').forEach(el => { const k = el.getAttribute('data-i18n-ph'); if (t[k]) el.placeholder = t[k]; });
 
-    document.querySelectorAll('#currencySymbol').forEach(el => el.innerText = getCurrencySymbol());
+    const currSym = getCurrencySymbol();
+    const symbolEl = document.getElementById('currencySymbol');
+    if (symbolEl) symbolEl.innerText = currSym;
 
     const indicatorEl = document.getElementById('viewModeIndicator');
     if (indicatorEl) {
