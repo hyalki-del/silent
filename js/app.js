@@ -647,12 +647,13 @@ function render() {
     const symbolEl = document.getElementById('currencySymbol');
     if (symbolEl) symbolEl.innerText = currSym;
 
-    const indicatorEl = document.getElementById('viewModeIndicator');
-    if (indicatorEl) {
-        indicatorEl.innerHTML = currentTab ? 
-            `<span class="text-sm sm:text-base font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
-            `<span class="text-sm sm:text-base font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-2xl sm:text-4xl font-extrabold break-words leading-tight mt-0.5 block">${t.awaitingAuth || 'AWAITING AUTHENTICATION...'}</span>`;
-    }
+   // In app.js -> render()
+const indicatorEl = document.getElementById('viewModeIndicator');
+if (indicatorEl) {
+    indicatorEl.innerHTML = currentTab ? 
+        `<span class="text-xs sm:text-sm font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-lg sm:text-2xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
+        `<span class="text-xs sm:text-sm font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-lg sm:text-2xl font-extrabold break-words leading-tight mt-0.5 block">${t.awaitingAuth || 'AWAITING AUTHENTICATION...'}</span>`;
+}
 
     ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings'].forEach(id => { document.getElementById(id)?.classList.toggle('hidden', !currentTab); });
 
