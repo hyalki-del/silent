@@ -131,64 +131,65 @@
         </div>
     </div>
 
-    <!-- Welcome / Landing Modal -->
-    <div id="welcomeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 pointer-events-auto">
-        <div class="theme-card p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl bg-white text-slate-900 pointer-events-auto">
-            <div class="border-b border-slate-200 pb-5 text-center space-y-4">
-                <div class="w-full max-w-[320px] mx-auto py-1">
-                    <img src="logo.png" alt="SPENSE Logo" class="w-full h-auto object-contain drop-shadow-md" onerror="this.src='https://placehold.co/300x120?text=SPENSE'">
-                </div>
-
-                <!-- Dynamic Sliding Tagline Container -->
-                <div class="py-2 min-h-[110px] flex items-center justify-center overflow-hidden">
-                    <div id="taglineSpot" class="w-full text-center leading-snug"></div>
-                </div>
-
-                <!-- Welcome Modal Language Selector -->
-                <div class="text-sm sm:text-base font-black tracking-widest text-slate-800 flex justify-center items-center gap-4 sm:gap-6 pt-2 uppercase">
-                    <button id="btnLangTR" type="button" onclick="window.switchLanguage('tr')" class="hover:text-amber-600 cursor-pointer transition px-1">TÜRKÇE</button>
-                    <span class="text-slate-300 font-normal">|</span>
-                    <button id="btnLangEN" type="button" onclick="window.switchLanguage('en')" class="hover:text-amber-600 cursor-pointer transition px-1">ENGLISH</button>
-                    <span class="text-slate-300 font-normal">|</span>
-                    <button id="btnLangDE" type="button" onclick="window.switchLanguage('de')" class="hover:text-amber-600 cursor-pointer transition px-1">DEUTSCH</button>
-                </div>
+  <!-- Welcome / Landing Modal -->
+<div id="welcomeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-3 pointer-events-auto">
+    <div class="theme-card p-4 sm:p-5 max-w-md w-full space-y-3 shadow-2xl bg-white text-slate-900 pointer-events-auto">
+        <div class="border-b border-slate-200 pb-3 text-center space-y-2">
+            <!-- Compact Logo Container -->
+            <div class="w-full max-w-[220px] mx-auto">
+                <img src="logo.png" alt="SPENSE Logo" class="w-full max-h-16 object-contain drop-shadow-md" onerror="this.src='https://placehold.co/240x80?text=SPENSE'">
             </div>
 
-            <!-- Modal Tab Controls -->
-            <div id="modalTabsHeader" class="flex gap-2 p-1 bg-slate-100 rounded-2xl">
-                <button id="tabCreateBtn" type="button" onclick="window.switchModalTab('create')" data-i18n="tabCreate" class="flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-xl cursor-pointer">Create New</button>
-                <button id="tabRecallBtn" type="button" onclick="window.switchModalTab('recall')" data-i18n="tabRecall" class="flex-1 theme-btn py-2 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-xl cursor-pointer">Recall Existing</button>
+            <!-- Compact Tagline Container -->
+            <div class="py-1 min-h-[50px] flex items-center justify-center overflow-hidden">
+                <div id="taglineSpot" class="w-full text-center leading-tight"></div>
             </div>
 
-            <!-- Create Section -->
-            <div id="createSection" class="space-y-4">
-                <div class="space-y-1">
-                    <label data-i18n="ledgerNameLabel" class="text-xs font-extrabold text-slate-800">Ledger Name</label>
-                    <input type="text" id="newLedgerName" data-i18n-ph="ledgerNamePh" placeholder="e.g. dinner-club" class="w-full theme-input px-3 py-2 text-sm" onkeypress="if(event.key==='Enter') window.createNewLedger()">
-                </div>
-                <div class="space-y-1">
-                    <label data-i18n="setPinLabel" class="text-xs font-extrabold text-slate-800">Set 4-Digit PIN</label>
-                    <input type="text" id="newLedgerPin" maxlength="4" placeholder="1234" class="w-full theme-input px-3 py-2 text-sm font-mono tracking-widest" onkeypress="if(event.key==='Enter') window.createNewLedger()">
-                </div>
-                <button id="btnInitializeLedger" type="button" onclick="window.createNewLedger()" data-i18n="initializeBtn" class="w-full theme-btn bg-lime-400 hover:bg-lime-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Initialize Ledger</button>
-            </div>
-
-            <!-- Recall Section -->
-            <div id="recallSection" class="space-y-4 hidden">
-                <div class="space-y-1">
-                    <label data-i18n="selectArchiveLabel" class="text-xs font-extrabold text-slate-800">Select Archive</label>
-                    <select id="archiveSelect" class="w-full theme-input px-3 py-2 text-sm cursor-pointer">
-                        <option value="">-- Loading Archives... --</option>
-                    </select>
-                </div>
-                <div class="space-y-1">
-                    <label data-i18n="enterPinLabel" class="text-xs font-extrabold text-slate-800">Enter 4-Digit PIN</label>
-                    <input type="text" id="recallLedgerPin" maxlength="4" placeholder="1234" class="w-full theme-input px-3 py-2 text-sm font-mono tracking-widest" onkeypress="if(event.key==='Enter') window.recallLedger()">
-                </div>
-                <button id="btnAccessLedger" type="button" onclick="window.recallLedger()" data-i18n="accessLedgerBtn" class="w-full theme-btn bg-cyan-400 hover:bg-cyan-500 text-slate-900 py-3 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Access Ledger</button>
+            <!-- Compact Language Selector -->
+            <div class="text-xs font-black tracking-widest text-slate-800 flex justify-center items-center gap-3 pt-1 uppercase">
+                <button id="btnLangTR" type="button" onclick="window.switchLanguage('tr')" class="hover:text-amber-600 cursor-pointer transition px-1">TÜRKÇE</button>
+                <span class="text-slate-300 font-normal">|</span>
+                <button id="btnLangEN" type="button" onclick="window.switchLanguage('en')" class="hover:text-amber-600 cursor-pointer transition px-1">ENGLISH</button>
+                <span class="text-slate-300 font-normal">|</span>
+                <button id="btnLangDE" type="button" onclick="window.switchLanguage('de')" class="hover:text-amber-600 cursor-pointer transition px-1">DEUTSCH</button>
             </div>
         </div>
+
+        <!-- Modal Tab Controls -->
+        <div id="modalTabsHeader" class="flex gap-2 p-1 bg-slate-100 rounded-xl">
+            <button id="tabCreateBtn" type="button" onclick="window.switchModalTab('create')" data-i18n="tabCreate" class="flex-1 theme-btn py-1.5 text-xs font-black uppercase tracking-wider bg-amber-300 text-slate-900 rounded-lg cursor-pointer">Create New</button>
+            <button id="tabRecallBtn" type="button" onclick="window.switchModalTab('recall')" data-i18n="tabRecall" class="flex-1 theme-btn py-1.5 text-xs font-black uppercase tracking-wider bg-transparent text-slate-500 rounded-lg cursor-pointer">Recall Existing</button>
+        </div>
+
+        <!-- Create Section -->
+        <div id="createSection" class="space-y-2.5">
+            <div class="space-y-0.5">
+                <label data-i18n="ledgerNameLabel" class="text-[11px] font-extrabold text-slate-800 uppercase tracking-wider">Ledger Name</label>
+                <input type="text" id="newLedgerName" data-i18n-ph="ledgerNamePh" placeholder="e.g. dinner-club" class="w-full theme-input px-3 py-1.5 text-xs" onkeypress="if(event.key==='Enter') window.createNewLedger()">
+            </div>
+            <div class="space-y-0.5">
+                <label data-i18n="setPinLabel" class="text-[11px] font-extrabold text-slate-800 uppercase tracking-wider">Set 4-Digit PIN</label>
+                <input type="text" id="newLedgerPin" maxlength="4" placeholder="1234" class="w-full theme-input px-3 py-1.5 text-xs font-mono tracking-widest" onkeypress="if(event.key==='Enter') window.createNewLedger()">
+            </div>
+            <button id="btnInitializeLedger" type="button" onclick="window.createNewLedger()" data-i18n="initializeBtn" class="w-full theme-btn bg-lime-400 hover:bg-lime-500 text-slate-900 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Initialize Ledger</button>
+        </div>
+
+        <!-- Recall Section -->
+        <div id="recallSection" class="space-y-2.5 hidden">
+            <div class="space-y-0.5">
+                <label data-i18n="selectArchiveLabel" class="text-[11px] font-extrabold text-slate-800 uppercase tracking-wider">Select Archive</label>
+                <select id="archiveSelect" class="w-full theme-input px-3 py-1.5 text-xs cursor-pointer">
+                    <option value="">-- Loading Archives... --</option>
+                </select>
+            </div>
+            <div class="space-y-0.5">
+                <label data-i18n="enterPinLabel" class="text-[11px] font-extrabold text-slate-800 uppercase tracking-wider">Enter 4-Digit PIN</label>
+                <input type="text" id="recallLedgerPin" maxlength="4" placeholder="1234" class="w-full theme-input px-3 py-1.5 text-xs font-mono tracking-widest" onkeypress="if(event.key==='Enter') window.recallLedger()">
+            </div>
+            <button id="btnAccessLedger" type="button" onclick="window.recallLedger()" data-i18n="accessLedgerBtn" class="w-full theme-btn bg-cyan-400 hover:bg-cyan-500 text-slate-900 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer">Access Ledger</button>
+        </div>
     </div>
+</div>
 
     <!-- Settings Modal -->
     <div id="settingsModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 pointer-events-auto">
