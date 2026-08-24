@@ -242,20 +242,55 @@ function initTaglineCarousel() {
 function initCardDragging() {
     const container = document.getElementById('appContainer');
     if (!container) return;
+    
     container.querySelectorAll('.card-drag-handle').forEach(handle => {
         const card = handle.closest('.theme-card');
         if (!card) return;
-        handle.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', ''); card.classList.add('opacity-40', 'scale-95'); window._draggedCard = card; });
-        handle.addEventListener('dragend', () => { card.classList.remove('opacity-40', 'scale-95'); container.querySelectorAll('.theme-card').forEach(c => c.classList.remove('border-amber-400', 'border-4', 'border-dashed')); window._draggedCard = null; });
+
+        handle.addEventListener('dragstart', (e) => { 
+            e.dataTransfer.setData('text/plain', ''); 
+            card.classList.add('opacity-40', 'scale-95'); 
+            window._draggedCard = card; 
+        });
+
+        handle.addEventListener('dragend', () => { 
+            card.classList.remove('opacity-40', 'scale-95'); 
+            container.querySelectorAll('.theme-card').forEach(c => 
+                c.classList.remove('border-amber-400', 'border-4', 'border-dashed')
+            ); 
+            window._draggedCard = null; 
+        });
+
         card.addEventListener('dragover', (e) => e.preventDefault());
-        card.addEventListener('dragenter', (e) => { e.preventDefault(); if (window._draggedCard && window._draggedCard !== card) card.classList.add('border-amber-400', 'border-4', 'border-dashed'); });
-        card.addEventListener('dragleave', () => card.classList.remove('border-amber-400', 'border-4', 'border-dashed'));
-        card.addEventListener('drop', (e) => {
-            e.preventDefault(); card.classList.remove('border-amber-400', 'border-4', 'border-dashed');
+
+        card.addEventListener('dragenter', (e) => { 
+            e.preventDefault(); 
             if (window._draggedCard && window._draggedCard !== card) {
-                const dragged = window._draggedCard, parent = card.parentNode, tempNode = document.createTextNode('');
-                parent.replaceChild(tempNode, dragged); parent.replaceChild(dragged, card); parent.replaceChild(card, tempNode);
-                document.getElementById('layoutActionBar')?.classList.remove('hidden');
+                card.classList.add('border-amber-400', 'border-4', 'border-dashed'); 
+            }
+        });
+
+        card.addEventListener('dragleave', () => 
+            card.classList.remove('border-amber-400', 'border-4', 'border-dashed')
+        );
+
+        card.addEventListener('drop', async (e) => {
+            e.preventDefault(); 
+            card.classList.remove('border-amber-400', 'border-4', 'border-dashed');
+            
+            if (window._draggedCard && window._draggedCard !== card) {
+                const dragged = window._draggedCard;
+                const parent = card.parentNode;
+                const tempNode = document.createTextNode('');
+
+                parent.replaceChild(tempNode, dragged); 
+                parent.replaceChild(dragged, card); 
+                parent.replaceChild(card, tempNode);
+
+                // Auto-save card arrangement as soon as drop completes
+                if (currentTab) {
+                    await callBackend('updateSettings', { cardOrder: getCurrentCardOrder() });
+                }
             }
         });
     });
