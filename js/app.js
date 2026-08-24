@@ -19,6 +19,11 @@ let ledgerData = { members: [], expenses: [] };
 let unsavedMembers = [];
 let editingExpenseId = null;
 
+// Settings Staging State
+let stagedLang = 'en';
+let stagedCurrency = 'USD';
+let stagedTheme = 'Silk';
+
 // --- Centralized Multilingual Dictionary ---
 const TRANSLATIONS = {
     en: {
@@ -150,15 +155,11 @@ function getLocalizedCategory(catKey) {
 
 // --- SETTINGS SELECTION ENGINE ---
 function openSettingsModal() { 
-    const langSelect = document.getElementById('settingsLangSelect');
-    const currSelect = document.getElementById('settingsCurrencySelect');
-    
-    if (langSelect) langSelect.value = currentLang;
-    if (currSelect) currSelect.value = currentCurrency;
+    stagedLang = currentLang;
+    stagedCurrency = currentCurrency;
+    stagedTheme = currentTheme;
 
-    const activeThemeRadio = document.querySelector(`input[name="modalThemeSelect"][value="${currentTheme}"]`);
-    if (activeThemeRadio) activeThemeRadio.checked = true;
-
+    updateSettingsModalUI();
     document.getElementById('settingsModal')?.classList.remove('hidden'); 
 }
 
@@ -166,16 +167,47 @@ function closeSettingsModal() {
     document.getElementById('settingsModal')?.classList.add('hidden'); 
 }
 
+function selectSettingsLang(lang) {
+    stagedLang = lang;
+    updateSettingsModalUI();
+}
+
+function selectSettingsCurrency(curr) {
+    stagedCurrency = curr;
+    updateSettingsModalUI();
+}
+
+function selectSettingsTheme(theme) {
+    stagedTheme = theme;
+    updateSettingsModalUI();
+}
+
+function updateSettingsModalUI() {
+    const languages = ['tr', 'en', 'de'];
+    languages.forEach(l => {
+        const btn = document.getElementById(`setLang${l.toUpperCase()}`);
+        if (btn) btn.classList.toggle('option-btn-selected', stagedLang === l);
+    });
+
+    const currencies = ['USD', 'EUR', 'TRY'];
+    currencies.forEach(c => {
+        const btn = document.getElementById(`setCurr${c}`);
+        if (btn) btn.classList.toggle('option-btn-selected', stagedCurrency === c);
+    });
+
+    const themes = ['Silk', 'Toon', 'Neon'];
+    themes.forEach(t => {
+        const btn = document.getElementById(`setTheme${t}`);
+        if (btn) btn.classList.toggle('option-btn-selected', stagedTheme === t);
+    });
+}
+
 async function saveSettings() {
-    const langSelect = document.getElementById('settingsLangSelect');
-    const currSelect = document.getElementById('settingsCurrencySelect');
-    const activeThemeRadio = document.querySelector('input[name="modalThemeSelect"]:checked');
+    currentLang = stagedLang;
+    currentCurrency = stagedCurrency;
+    applyTheme(stagedTheme);
 
-    if (langSelect) currentLang = langSelect.value;
-    if (currSelect) currentCurrency = currSelect.value;
-    if (activeThemeRadio) applyTheme(activeThemeRadio.value);
-
-    document.getElementById('settingsModal')?.classList.add('hidden');
+    closeSettingsModal();
     render();
     initTaglineCarousel();
 
@@ -385,13 +417,9 @@ function startEditExpense(id) {
     const exp = ledgerData.expenses.find(e => e.id.toString() === id.toString());
     if (!exp) return;
     
-    // 1. Set active edit state
     editingExpenseId = id.toString();
-
-    // 2. Render UI to populate dropdowns and update action buttons
     render();
 
-    // 3. Set input values after options have been rendered
     const dateInput = document.getElementById('expenseDate');
     const descInput = document.getElementById('expenseDesc');
     const amountInput = document.getElementById('expenseAmount');
@@ -404,13 +432,11 @@ function startEditExpense(id) {
     if (catInput) catInput.value = exp.category || 'Food & Drink';
     if (paidByInput) paidByInput.value = findMemberCanonical(exp.paidBy) || '';
 
-    // 4. Restore checkboxes state for split members
     const splitArr = (Array.isArray(exp.splitWith) ? exp.splitWith : (exp.splitBetween || [])).map(s => s.toLowerCase());
     document.querySelectorAll('.split-checkbox').forEach(cb => { 
         cb.checked = splitArr.includes(cb.value.toLowerCase()); 
     });
 
-    // 5. Focus view on expense form
     document.getElementById('expenseFormSection')?.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -569,7 +595,7 @@ function render() {
     document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (t[k]) el.innerText = t[k]; });
     document.querySelectorAll('[data-i18n-ph]').forEach(el => { const k = el.getAttribute('data-i18n-ph'); if (t[k]) el.placeholder = t[k]; });
 
-    document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = getCurrencySymbol());
+    document.querySelectorAll('#currencySymbol').forEach(el => el.innerText = getCurrencySymbol());
 
     const indicatorEl = document.getElementById('viewModeIndicator');
     if (indicatorEl) {
@@ -630,7 +656,6 @@ function renderDropdowns() {
     const paidSelect = document.getElementById('expensePaidBy');
     if (!catSelect || !paidSelect) return;
 
-    // Retain explicit option states across DOM redraws
     const currentPaidBy = paidSelect.value;
     const currentCat = catSelect.value;
 
@@ -726,6 +751,7 @@ window.startEditExpense = startEditExpense; window.cancelEditExpense = cancelEdi
 window.deleteExpenseFromEdit = deleteExpenseFromEdit; window.copySettlementSummary = copySettlementSummary;
 window.generateLedgerReport = generateLedgerReport; window.switchLanguage = switchLanguage;
 window.saveCardLayout = saveCardLayout; window.selectAllSplits = selectAllSplits; window.saveSettings = saveSettings;
+window.selectSettingsLang = selectSettingsLang; window.selectSettingsCurrency = selectSettingsCurrency; window.selectSettingsTheme = selectSettingsTheme;
 
 document.addEventListener('DOMContentLoaded', () => {
     initTaglineCarousel(); 
