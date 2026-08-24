@@ -51,9 +51,9 @@ const TRANSLATIONS = {
         reportHistoryTitle: "ITEMIZED TRANSACTION HISTORY", reportPaidBy: "Paid By", reportSplitWith: "Split With",
         categories: { "Food & Drink": "Food & Drink", "Transport": "Transport", "Accommodation": "Accommodation", "Shopping": "Shopping", "Entertainment": "Entertainment", "Other": "Other" },
         taglines: [
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Spend simply.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Enjoy the moment. Leave tracking to SPENSE.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Just add what you spent.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Who paid? Who shares? SPENSE does the math.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Settle easily.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">See who owes whom — and how much.</span>`
+            `<strong class="block font-black text-slate-900 text-lg sm:text-xl leading-tight">Spend simply.</strong><span class="block text-slate-600 text-[11px] font-medium mt-0.5">Enjoy the moment. Leave tracking to SPENSE.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-xl leading-tight">Just add what you spent.</strong><span class="block text-slate-600 text-[11px] font-medium mt-0.5">Who paid? Who shares? SPENSE does the math.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-xl leading-tight">Settle easily.</strong><span class="block text-slate-600 text-[11px] font-medium mt-0.5">See who owes whom — and how much.</span>`
         ]
     },
     tr: {
@@ -81,9 +81,9 @@ const TRANSLATIONS = {
         reportHistoryTitle: "DETAYLI İŞLEM GEÇMİŞİ", reportPaidBy: "Ödeyen", reportSplitWith: "Paylaşanlar",
         categories: { "Food & Drink": "Yiyecek & İçecek", "Transport": "Ulaşım", "Accommodation": "Konaklama", "Shopping": "Alışveriş", "Entertainment": "Eğlence", "Other": "Diğer" },
         taglines: [
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Kolayca harca.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Anın tadını çıkar. Takibi SPENSE'e bırak.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Sadece harcamanı ekle.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kim ödedi? Kimler paylaşıyor? Matematik işini SPENSE yapar.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Rahatça hesabı kapat.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Kimin kime borcu var — anında gör.</span>`
+            `<strong class="block font-black text-slate-900 text-lg sm:text-xl leading-tight">Kolayca harca.</strong><span class="block text-slate-600 text-[11px] font-medium mt-0.5">Anın tadını çıkar. Takibi SPENSE'e bırak.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-xl leading-tight">Sadece harcamanı ekle.</strong><span class="block text-slate-600 text-[11px] font-medium mt-0.5">Kim ödedi? Kimler paylaşıyor? Matematik işini SPENSE yapar.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-xl leading-tight">Rahatça hesabı kapat.</strong><span class="block text-slate-600 text-[11px] font-medium mt-0.5">Kimin kime borcu var — anında gör.</span>`
         ]
     },
     de: {
@@ -111,9 +111,9 @@ const TRANSLATIONS = {
         reportHistoryTitle: "TRANSAKTIONSVERLAUF", reportPaidBy: "Bezahlt von", reportSplitWith: "Aufgeteilt mit",
         categories: { "Food & Drink": "Essen & Trinken", "Transport": "Transport", "Accommodation": "Unterkunft", "Shopping": "Einkaufen", "Entertainment": "Unterhaltung", "Other": "Sonstiges" },
         taglines: [
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach ausgeben.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Genieße den Moment. Überlasse die Nachverfolgung SPENSE.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach eintragen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Wer hat bezahlt? Wer teilt es? SPENSE macht die Rechnung.</span>`,
-            `<strong class="block font-black text-slate-900 text-2xl sm:text-3xl leading-tight">Einfach abrechnen.</strong><span class="block text-slate-600 text-xs sm:text-sm font-medium mt-1">Sehen Sie wer wem schuldet — und wie viel.</span>`
+            `<strong class="block font-black text-slate-900 text-lg sm:text-xl leading-tight">Einfach ausgeben.</strong><span class="block text-slate-600 text-[11px] font-medium mt-0.5">Genieße den Moment. Überlasse die Nachverfolgung SPENSE.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-xl leading-tight">Einfach eintragen.</strong><span class="block text-slate-600 text-[11px] font-medium mt-0.5">Wer hat bezahlt? Wer teilt es? SPENSE macht die Rechnung.</span>`,
+            `<strong class="block font-black text-slate-900 text-lg sm:text-xl leading-tight">Einfach abrechnen.</strong><span class="block text-slate-600 text-[11px] font-medium mt-0.5">Sehen Sie wer wem schuldet — und wie viel.</span>`
         ]
     }
 };
@@ -220,21 +220,43 @@ async function saveSettings() {
     }
 }
 
-let taglineTimer = null, currentTaglineIndex = 0;
+let taglineTimer = null;
+let carouselStepIndex = 0;
+
 function initTaglineCarousel() {
     const spot = document.getElementById('taglineSpot');
     if (!spot) return;
     if (taglineTimer) clearInterval(taglineTimer);
+    
     const motionClasses = ['motion-left', 'motion-right', 'motion-top', 'motion-bottom'];
 
     function cycleTagline() {
         const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
-        spot.className = "w-full text-center leading-snug";
+        const taglines = t.taglines || [];
+        if (taglines.length === 0) return;
+
+        spot.className = "w-full text-center leading-snug flex items-center justify-center min-h-[70px]";
         void spot.offsetWidth;
-        spot.innerHTML = t.taglines[currentTaglineIndex % t.taglines.length];
-        spot.className = "w-full text-center leading-snug " + motionClasses[Math.floor(Math.random() * motionClasses.length)];
-        currentTaglineIndex++;
+
+        const isLogoStep = (carouselStepIndex % 2 !== 0);
+
+        if (isLogoStep) {
+            spot.innerHTML = `
+                <div class="w-full max-w-[280px] mx-auto py-1">
+                    <img src="logo.png" alt="SPENSE Logo" class="w-full max-h-20 object-contain drop-shadow-md mx-auto" onerror="this.src='https://placehold.co/300x100?text=SPENSE'">
+                </div>
+            `;
+        } else {
+            const textIndex = Math.floor(carouselStepIndex / 2) % taglines.length;
+            spot.innerHTML = taglines[textIndex];
+        }
+
+        const selectedMotion = motionClasses[Math.floor(Math.random() * motionClasses.length)];
+        spot.className = `w-full text-center leading-snug flex items-center justify-center min-h-[70px] ${selectedMotion}`;
+        
+        carouselStepIndex++;
     }
+
     cycleTagline();
     taglineTimer = setInterval(cycleTagline, 3200);
 }
@@ -287,7 +309,6 @@ function initCardDragging() {
                 parent.replaceChild(dragged, card); 
                 parent.replaceChild(card, tempNode);
 
-                // Auto-save arrangement directly to Google Sheets backend
                 if (currentTab) {
                     const newOrder = getCurrentCardOrder();
                     await callBackend('updateSettings', { cardOrder: newOrder });
@@ -405,7 +426,6 @@ async function recallLedger() {
             
             document.getElementById('welcomeModal')?.classList.add('hidden'); 
             
-            // Render first to construct the full interface DOM, then reorder cards safely
             render();
             if (data.cardOrder) {
                 applyCardOrder(data.cardOrder);
@@ -647,13 +667,13 @@ function render() {
     const symbolEl = document.getElementById('currencySymbol');
     if (symbolEl) symbolEl.innerText = currSym;
 
-// Inside render() in app.js
-const indicatorEl = document.getElementById('viewModeIndicator');
-if (indicatorEl) {
-    indicatorEl.innerHTML = currentTab ? 
-        `<span class="text-xs sm:text-sm font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-lg sm:text-2xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
-        `<span class="text-xs sm:text-sm font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-lg sm:text-2xl font-extrabold break-words leading-tight mt-0.5 block">${t.awaitingAuth || 'AWAITING AUTHENTICATION...'}</span>`;
-}
+    const indicatorEl = document.getElementById('viewModeIndicator');
+    if (indicatorEl) {
+        indicatorEl.innerHTML = currentTab ? 
+            `<span class="text-xs sm:text-sm font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-lg sm:text-2xl font-extrabold break-words leading-tight mt-0.5 block">${currentTab.toUpperCase()}</span>` :
+            `<span class="text-xs sm:text-sm font-medium uppercase tracking-wider opacity-70">${t.activeLedgerLabel || 'Active ledger:'}</span><span class="text-lg sm:text-2xl font-extrabold break-words leading-tight mt-0.5 block">${t.awaitingAuth || 'AWAITING AUTHENTICATION...'}</span>`;
+    }
+
     ['btnDeleteLedger', 'btnOpenShare', 'btnOpenSettings'].forEach(id => { document.getElementById(id)?.classList.toggle('hidden', !currentTab); });
 
     renderMembers(); renderExpenseFormHeader(); renderDropdowns(); renderSplitCheckboxes(); renderHistory(); renderSettlement();
