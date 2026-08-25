@@ -400,10 +400,12 @@ async function createNewLedger() {
     } else alert("Failed to create ledger.");
 }
 
-async function recallLedger() {
-    const targetLedger = document.getElementById('archiveSelect')?.value;
-    const pinVal = document.getElementById('recallLedgerPin')?.value.trim();
-    if (!targetLedger || pinVal.length !== 4) { alert("Please select a ledger and enter your 4-digit PIN."); return; }
+async function recallLedger(forcedTab = null) {
+    const targetLedger = forcedTab || document.getElementById('archiveSelect')?.value;
+    const pinInput = document.getElementById('recallLedgerPin');
+    const pinVal = forcedTab ? (pinInput?.value.trim() || currentPin) : pinInput?.value.trim();
+    
+    if (!targetLedger || !pinVal || pinVal.length !== 4) { alert("Please select a ledger and enter your 4-digit PIN."); return; }
     try {
         const sheetUrl = await getConfig();
         const res = await fetch(`${sheetUrl}?tab=${encodeURIComponent(targetLedger)}&pin=${encodeURIComponent(pinVal)}`);
@@ -414,6 +416,9 @@ async function recallLedger() {
             currentTheme = data.theme || "Silk"; 
             currentCurrency = data.currency || "USD"; 
             currentLang = data.language || "en";
+            stagedLang = currentLang;
+            stagedCurrency = currentCurrency;
+            stagedTheme = currentTheme;
             
             applyTheme(currentTheme);
             
@@ -437,7 +442,7 @@ async function recallLedger() {
 function openShareModal() {
     document.getElementById('shareModal')?.classList.remove('hidden');
     const input = document.getElementById('shareLinkInput');
-    if (input && currentTab) input.value = `${window.location.origin}${window.location.pathname}?ledger=${encodeURIComponent(currentTab)}`;
+    if (input && currentTab) input.value = `${window.location.origin}${window.location.pathname}?tab=${encodeURIComponent(currentTab)}`;
 }
 function closeShareModal() { document.getElementById('shareModal')?.classList.add('hidden'); }
 function copyShareLink() { const input = document.getElementById('shareLinkInput'); if (input) { input.select(); navigator.clipboard.writeText(input.value); alert("Copied share link!"); } }
@@ -455,9 +460,22 @@ async function addMemberDirect() {
     const name = input.value.trim();
     if (!name || !currentTab) return;
     if (ledgerData.members.some(m => m.toLowerCase() === name.toLowerCase())) { input.value = ''; return; }
+    
+    // Preserve current selection state before rendering
+    const checkedValues = Array.from(document.querySelectorAll('.split-checkbox:checked')).map(cb => cb.value.toLowerCase());
+    
     ledgerData.members.push(name);
     if (!unsavedMembers.includes(name)) unsavedMembers.push(name);
-    input.value = ''; render();
+    input.value = ''; 
+    render();
+    
+    // Reapply user selections + check newly added member by default
+    document.querySelectorAll('.split-checkbox').forEach(cb => {
+        if (checkedValues.includes(cb.value.toLowerCase()) || cb.value.toLowerCase() === name.toLowerCase()) {
+            cb.checked = true;
+        }
+    });
+
     const res = await callBackend('addMembers', { names: [name] });
     if (res && res.status === "success") unsavedMembers = unsavedMembers.filter(m => m !== name);
     render();
@@ -569,7 +587,7 @@ async function addExpense() {
 function calculateSettlement() {
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     const balances = {}, lowerMap = {};
-    ledgerData.members.forEach(m => { balances[m.toLowerCase()] = 0; lowerMap[m.toLowerCase()] = m; });
+    ledgerData.members.forEach(m => { balances[m.toLowerCase()] = 0; lowerMap[m.toLowerCase()] = findMemberCanonical(m); });
 
     ledgerData.expenses.forEach(e => {
         const amt = parseFloat(e.amount) || 0;
@@ -652,6 +670,7 @@ function applyTheme(themeName) { currentTheme = themeName; document.documentElem
 
 function switchLanguage(lang) { 
     currentLang = lang; 
+    stagedLang = lang;
     render(); 
     initTaglineCarousel(); 
 }
@@ -749,7 +768,9 @@ function renderSplitCheckboxes() {
 
     container.innerHTML = ledgerData.members.length > 0
         ? ledgerData.members.map(m => {
-            const isChecked = editingExpenseId ? userSelectedValues.includes(m.toLowerCase()) : (userSelectedValues.length === 0 || userSelectedValues.includes(m.toLowerCase()));
+            const isChecked = editingExpenseId 
+                ? userSelectedValues.includes(m.toLowerCase()) 
+                : (userSelectedValues.length === 0 || userSelectedValues.includes(m.toLowerCase()));
             return `
             <label class="flex items-center gap-1.5 cursor-pointer bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-300 font-semibold">
                 <input type="checkbox" value="${escapeHTML(m)}" ${isChecked ? 'checked' : ''} class="split-checkbox accent-slate-900 cursor-pointer"> ${escapeHTML(m)}
@@ -828,6 +849,18 @@ document.addEventListener('DOMContentLoaded', () => {
     initCardDragging();
     const dateInput = document.getElementById('expenseDate');
     if (dateInput) dateInput.value = formatToISODate(new Date());
+    
+    // Auto-Recall via Shared Link URL Parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedTab = urlParams.get('tab') || urlParams.get('ledger');
+    if (sharedTab) {
+        switchModalTab('recall');
+        setTimeout(() => {
+            const archiveSelect = document.getElementById('archiveSelect');
+            if (archiveSelect) archiveSelect.value = sharedTab;
+        }, 500);
+    }
+
     render(); 
     loadGoogleSheetsArchive();
 });
